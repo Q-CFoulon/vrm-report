@@ -3,15 +3,21 @@ import * as path from 'path';
 
 dotenv.config();
 
+export type AuthMode = 'interactive' | 'client_credential';
+
 export interface AppConfig {
+  authMode: AuthMode;
   azure: {
     tenantId: string;
     clientId: string;
-    clientSecret: string;
+    clientSecret?: string;
   };
   defender: {
     baseUrl: string;
-    scope: string;
+    /** Scope for client-credential flow (/.default) */
+    appScope: string;
+    /** Scope for delegated / interactive flow */
+    delegatedScope: string;
   };
   outputDir: string;
   enrichmentFile: string;
@@ -28,18 +34,22 @@ function requireEnv(key: string): string {
 
 export function loadConfig(): AppConfig {
   const baseUrl =
-    process.env.DEFENDER_API_BASE_URL ?? 'https://api.security.microsoft.com';
+    process.env.DEFENDER_API_BASE_URL ??
+    'https://api.securitycenter.microsoft.com';
+
+  const authMode = (process.env.AUTH_MODE ?? 'interactive') as AuthMode;
 
   return {
+    authMode,
     azure: {
       tenantId: requireEnv('AZURE_TENANT_ID'),
       clientId: requireEnv('AZURE_CLIENT_ID'),
-      clientSecret: requireEnv('AZURE_CLIENT_SECRET'),
+      clientSecret: process.env.AZURE_CLIENT_SECRET || undefined,
     },
     defender: {
       baseUrl,
-      // The scope for Defender for Endpoint APIs
-      scope: `${baseUrl}/.default`,
+      appScope: `${baseUrl}/.default`,
+      delegatedScope: `${baseUrl}/.default`,
     },
     outputDir: path.resolve(process.env.OUTPUT_DIR ?? './output'),
     enrichmentFile: path.resolve(

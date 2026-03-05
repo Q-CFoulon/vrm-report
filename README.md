@@ -38,9 +38,8 @@ Reference: [Defender for Endpoint API docs](https://learn.microsoft.com/en-us/de
 
 1. **Node.js** ≥ 18
 2. **Microsoft Entra ID App Registration** with:
-   - Application permission: `Vulnerability.Read.All`
-   - Admin consent granted
-   - Client secret generated
+   - **Interactive mode (default):** Delegated permission `Vulnerability.Read` + "Allow public client flows" enabled
+   - **Client-credential mode:** Application permission `Vulnerability.Read.All` + admin consent + client secret
 3. **Microsoft Defender for Endpoint** Plan 1 or Plan 2 license
 
 ## Setup
@@ -55,7 +54,9 @@ npm install
 
 # Copy and configure environment variables
 cp .env.example .env
-# Edit .env with your tenant ID, client ID, and client secret
+# Edit .env with your tenant ID and client ID
+# For interactive login (default): no client secret needed
+# For client-credential mode: also set AZURE_CLIENT_SECRET and AUTH_MODE=client_credential
 ```
 
 ## Enrichment File
@@ -84,7 +85,7 @@ See `data/enrichment/asset-enrichment.example.json` for the full schema.
 npm run validate
 ```
 
-Tests token acquisition and API access. Run this first to confirm your credentials and permissions are correct.
+Tests token acquisition and API access. In interactive mode, this will display a device code and URL — open the URL in your browser and sign in with your credentials. Run this first to confirm your permissions are correct.
 
 ### Generate Report
 
@@ -120,7 +121,7 @@ vrm-report/
 │   │   ├── vrm-report.types.ts     # VRM report row (columns A–O)
 │   │   └── enrichment.types.ts     # Asset enrichment schema
 │   ├── services/
-│   │   ├── auth.service.ts         # MSAL client-credential auth
+│   │   ├── auth.service.ts         # MSAL auth (interactive device-code + client-credential)
 │   │   ├── defender-api.service.ts # Paginated Defender API client
 │   │   ├── enrichment.service.ts   # Business-context enrichment loader
 │   │   └── report.service.ts       # Excel + CSV report generation
@@ -142,10 +143,13 @@ vrm-report/
 | Application | `Vulnerability.Read.All` | Read Threat and Vulnerability Management vulnerability information |
 | Delegated | `Vulnerability.Read` | Read Threat and Vulnerability Management vulnerability information |
 
-The app registration needs admin consent for the application permission. See [Use Microsoft Defender for Endpoint APIs](https://learn.microsoft.com/en-us/defender-endpoint/api/apis-intro) for setup instructions.
+**Interactive mode (default):** The app registration needs delegated `Vulnerability.Read` permission and "Allow public client flows" enabled in the app registration's Authentication settings.
+
+**Client-credential mode:** The app registration needs application `Vulnerability.Read.All` permission with admin consent. See [Use Microsoft Defender for Endpoint APIs](https://learn.microsoft.com/en-us/defender-endpoint/api/apis-intro) for setup instructions.
 
 ## Security Notes
 
+- Interactive device-code flow is the default — no client secret needed
 - Credentials are loaded from environment variables only (never hardcoded)
 - The `.env` file is excluded from git via `.gitignore`
 - Access tokens are cached in memory and refreshed automatically
