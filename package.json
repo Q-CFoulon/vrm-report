@@ -1,0 +1,40 @@
+{
+  "name": "vrm-report",
+  "version": "1.0.0",
+  "description": "Vulnerability Risk Management Report Generator - Pulls vulnerability data from Microsoft Defender for Endpoint APIs to generate risk-informed VRM reports",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "generate": "ts-node src/index.ts generate",
+    "validate": "ts-node src/index.ts validate",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "vulnerability",
+    "risk-management",
+    "defender-endpoint",
+    "security",
+    "vrm",
+    "compliance"
+  ],
+  "author": "",
+  "license": "PRIVATE",
+  "dependencies": {
+    "@azure/identity": "^4.6.0",
+    "@azure/msal-node": "^2.16.0",
+    "axios": "^1.7.9",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  }
+}
