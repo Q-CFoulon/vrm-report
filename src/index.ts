@@ -16,6 +16,7 @@ import { mapToVrmRows } from './mappers/vulnerability.mapper';
 import {
   generateExcelReport,
   generateCsvReport,
+  generateJsonReport,
   computeSummary,
 } from './services/report.service';
 import type { MachineReference } from './types';
@@ -36,6 +37,7 @@ program
   .command('generate')
   .description('Fetch vulnerability data and generate the VRM report.')
   .option('--csv', 'Also produce a CSV export alongside the Excel report.')
+  .option('--json', 'Also produce a JSON export alongside the Excel report.')
   .option('--output <dir>', 'Override output directory.')
   .action(async (opts) => {
     const config = loadConfig();
@@ -129,6 +131,11 @@ program
       if (opts.csv) {
         const csvPath = generateCsvReport(rows, outputDir);
         logger.info(`CSV report:   ${csvPath}`);
+      }
+
+      if (opts.json) {
+        const jsonPath = generateJsonReport(rows, outputDir);
+        logger.info(`JSON report:  ${jsonPath}`);
       }
 
       logger.info('=== Done ===');

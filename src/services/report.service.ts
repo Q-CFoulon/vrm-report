@@ -184,6 +184,38 @@ export async function generateExcelReport(
   return filePath;
 }
 
+// -- JSON export ------------------------------------------------------------
+
+export function generateJsonReport(
+  rows: VrmReportRow[],
+  outputDir: string,
+): string {
+  const logger = getLogger();
+  const summary = computeSummary(rows);
+
+  const payload = {
+    generatedAt: summary.generatedAt,
+    summary,
+    rows: rows.map((r) => ({
+      ...r,
+      dateFirstDetected: formatReportDate(r.dateFirstDetected),
+      dateLastDetected: formatReportDate(r.dateLastDetected),
+    })),
+  };
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const filename = `VRM-Report-${timestamp}.json`;
+  const filePath = path.join(outputDir, filename);
+
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf-8');
+  logger.info(`JSON report written to ${filePath}`);
+  return filePath;
+}
+
 // -- CSV export -------------------------------------------------------------
 
 export function generateCsvReport(
