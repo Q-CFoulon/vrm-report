@@ -1,0 +1,10 @@
+relationship 27fbcdb6-c7c6-4d5a-b951-518ba177b58d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: VRM_Report.'Date First Detected'
+	toColumn: LocalDateTable_f5fd5720-20b8-4b7c-b54a-b27094884d8f.Date
+
+relationship 6ebd6524-aecb-4bc4-b4c3-6739723fcb45
+	joinOnDateBehavior: datePartOnly
+	fromColumn: VRM_Report.'Date Last Detected'
+	toColumn: LocalDateTable_773ee2ea-7a6b-4099-ad8a-641c70d5c74b.Date
+

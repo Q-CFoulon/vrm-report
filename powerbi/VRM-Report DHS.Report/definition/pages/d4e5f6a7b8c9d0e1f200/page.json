@@ -4,11 +4,5 @@
   "displayName": "Detail Table",
   "displayOption": "FitToPage",
   "height": 720,
-  "width": 1280,
-  "pageBinding": {
-    "name": "f3fcad954d944bf9b24f",
-    "type": "Default",
-    "parameters": [],
-    "referenceScope": "CrossReport"
-  }
+  "width": 1280
 }

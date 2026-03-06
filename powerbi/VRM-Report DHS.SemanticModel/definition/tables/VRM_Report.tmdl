@@ -85,8 +85,10 @@ table VRM_Report
 	column 'CVSS Score'
 		dataType: double
 		lineageTag: 8ba77613-c64d-4a9f-95ed-57ca2f59cda9
-		summarizeBy: none
+		summarizeBy: sum
 		sourceColumn: CVSS Score
+
+		annotation SummarizationSetBy = Automatic
 
 	column Description
 		dataType: string
@@ -113,12 +115,22 @@ table VRM_Report
 		summarizeBy: none
 		sourceColumn: Date First Detected
 
+		variation Variation
+			isDefault
+			relationship: 27fbcdb6-c7c6-4d5a-b951-518ba177b58d
+			defaultHierarchy: LocalDateTable_f5fd5720-20b8-4b7c-b54a-b27094884d8f.'Date Hierarchy'
+
 	column 'Date Last Detected'
 		dataType: dateTime
 		formatString: General Date
 		lineageTag: b9ec6085-c8e8-4d8d-8bf9-8b544d646b03
 		summarizeBy: none
 		sourceColumn: Date Last Detected
+
+		variation Variation
+			isDefault
+			relationship: 6ebd6524-aecb-4bc4-b4c3-6739723fcb45
+			defaultHierarchy: LocalDateTable_773ee2ea-7a6b-4099-ad8a-641c70d5c74b.'Date Hierarchy'
 
 	column Status
 		dataType: string
@@ -387,4 +399,8 @@ table VRM_Report
 				    })
 				in
 				    Renamed
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
 

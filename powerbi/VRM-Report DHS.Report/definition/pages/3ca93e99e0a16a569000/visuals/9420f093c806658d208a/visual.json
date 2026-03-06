@@ -1,0 +1,98 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+  "name": "9420f093c806658d208a",
+  "position": {
+    "x": 880.76866223207674,
+    "y": 0,
+    "z": 1000,
+    "height": 220.42867701404285,
+    "width": 399.23133776792309,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "donutChart",
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Critical Count"
+                }
+              },
+              "queryRef": "VRM_Report.Critical Count",
+              "nativeQueryRef": "Critical Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Medium Count"
+                }
+              },
+              "queryRef": "VRM_Report.Medium Count",
+              "nativeQueryRef": "Medium Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "High Count"
+                }
+              },
+              "queryRef": "VRM_Report.High Count",
+              "nativeQueryRef": "High Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Exploitable Count"
+                }
+              },
+              "queryRef": "VRM_Report.Exploitable Count",
+              "nativeQueryRef": "Exploitable Count"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "VRM_Report"
+                  }
+                },
+                "Property": "Critical Count"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

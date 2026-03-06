@@ -10,5 +10,337 @@
     "type": "Default",
     "parameters": [],
     "referenceScope": "CrossReport"
-  }
+  },
+  "visuals": [
+    {
+      "name": "kpi_total",
+      "position": { "x": 20, "y": 20, "z": 0, "width": 220, "height": 110, "tabOrder": 0 },
+      "visual": {
+        "visualType": "card",
+        "query": {
+          "queryState": {
+            "Values": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Total Vulnerabilities'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "kpi_crit_exploit",
+      "position": { "x": 260, "y": 20, "z": 0, "width": 220, "height": 110, "tabOrder": 1 },
+      "visual": {
+        "visualType": "card",
+        "query": {
+          "queryState": {
+            "Values": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Critical or Exploitable Unpatched" } },
+                  "queryRef": "VRM_Report.Critical or Exploitable Unpatched",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Critical / Exploitable Unpatched'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "kpi_overdue",
+      "position": { "x": 500, "y": 20, "z": 0, "width": 220, "height": 110, "tabOrder": 2 },
+      "visual": {
+        "visualType": "card",
+        "query": {
+          "queryState": {
+            "Values": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Overdue Over 90 Days" } },
+                  "queryRef": "VRM_Report.Overdue Over 90 Days",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Overdue > 90 Days'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "kpi_avg_days",
+      "position": { "x": 740, "y": 20, "z": 0, "width": 220, "height": 110, "tabOrder": 3 },
+      "visual": {
+        "visualType": "card",
+        "query": {
+          "queryState": {
+            "Values": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Avg Days Open" } },
+                  "queryRef": "VRM_Report.Avg Days Open",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Avg Days Open'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "kpi_risk_pct",
+      "position": { "x": 980, "y": 20, "z": 0, "width": 140, "height": 110, "tabOrder": 4 },
+      "visual": {
+        "visualType": "card",
+        "query": {
+          "queryState": {
+            "Values": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Risk Accepted Pct" } },
+                  "queryRef": "VRM_Report.Risk Accepted Pct",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Risk Accepted %'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "kpi_avg_cvss",
+      "position": { "x": 1140, "y": 20, "z": 0, "width": 120, "height": 110, "tabOrder": 5 },
+      "visual": {
+        "visualType": "card",
+        "query": {
+          "queryState": {
+            "Values": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Average CVSS" } },
+                  "queryRef": "VRM_Report.Average CVSS",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Avg CVSS Score'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "donut_criticality",
+      "position": { "x": 20, "y": 150, "z": 0, "width": 380, "height": 260, "tabOrder": 6 },
+      "visual": {
+        "visualType": "donutChart",
+        "query": {
+          "queryState": {
+            "Category": {
+              "projections": [
+                {
+                  "field": { "Column": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Criticality" } },
+                  "queryRef": "VRM_Report.Criticality",
+                  "active": true
+                }
+              ]
+            },
+            "Y": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Count by Criticality'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "bar_status",
+      "position": { "x": 420, "y": 150, "z": 0, "width": 420, "height": 260, "tabOrder": 7 },
+      "visual": {
+        "visualType": "columnChart",
+        "query": {
+          "queryState": {
+            "Category": {
+              "projections": [
+                {
+                  "field": { "Column": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Status" } },
+                  "queryRef": "VRM_Report.Status",
+                  "active": true
+                }
+              ]
+            },
+            "Y": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Count by Status'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "bar_os",
+      "position": { "x": 860, "y": 150, "z": 0, "width": 400, "height": 260, "tabOrder": 8 },
+      "visual": {
+        "visualType": "barChart",
+        "query": {
+          "queryState": {
+            "Category": {
+              "projections": [
+                {
+                  "field": { "Column": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Device OS" } },
+                  "queryRef": "VRM_Report.Device OS",
+                  "active": true
+                }
+              ]
+            },
+            "Y": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Count by Device OS'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "bar_asset_crit",
+      "position": { "x": 20, "y": 430, "z": 0, "width": 380, "height": 270, "tabOrder": 9 },
+      "visual": {
+        "visualType": "columnChart",
+        "query": {
+          "queryState": {
+            "Category": {
+              "projections": [
+                {
+                  "field": { "Column": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Asset Criticality" } },
+                  "queryRef": "VRM_Report.Asset Criticality",
+                  "active": true
+                }
+              ]
+            },
+            "Y": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Count by Asset Criticality'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "bar_location",
+      "position": { "x": 420, "y": 430, "z": 0, "width": 400, "height": 270, "tabOrder": 10 },
+      "visual": {
+        "visualType": "columnChart",
+        "query": {
+          "queryState": {
+            "Category": {
+              "projections": [
+                {
+                  "field": { "Column": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Location" } },
+                  "queryRef": "VRM_Report.Location",
+                  "active": true
+                }
+              ]
+            },
+            "Y": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Count by Location'" } } } } }]
+        }
+      }
+    },
+    {
+      "name": "bar_datatype",
+      "position": { "x": 840, "y": 430, "z": 0, "width": 420, "height": 270, "tabOrder": 11 },
+      "visual": {
+        "visualType": "barChart",
+        "query": {
+          "queryState": {
+            "Category": {
+              "projections": [
+                {
+                  "field": { "Column": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Data Type" } },
+                  "queryRef": "VRM_Report.Data Type",
+                  "active": true
+                }
+              ]
+            },
+            "Y": {
+              "projections": [
+                {
+                  "field": { "Measure": { "Expression": { "SourceRef": { "Entity": "VRM_Report" } }, "Property": "Total Vulnerabilities" } },
+                  "queryRef": "VRM_Report.Total Vulnerabilities",
+                  "active": true
+                }
+              ]
+            }
+          }
+        },
+        "vcObjects": {
+          "title": [{ "properties": { "show": { "expr": { "Literal": { "Value": "true" } } }, "text": { "expr": { "Literal": { "Value": "'Count by Data Type'" } } } } }]
+        }
+      }
+    }
+  ]
 }

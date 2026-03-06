@@ -9,6 +9,15 @@
         "page": "2.3.0"
       },
       "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "NewExecutive",
+      "reportVersionAtImport": {
+        "visual": "2.6.0",
+        "report": "3.1.0",
+        "page": "2.3.0"
+      },
+      "type": "SharedResources"
     }
   },
   "objects": {
@@ -24,8 +33,36 @@
           }
         }
       }
+    ],
+    "outspacePane": [
+      {
+        "properties": {
+          "visible": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          },
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "true"
+              }
+            }
+          }
+        }
+      }
     ]
   },
+  "publicCustomVisuals": [
+    "Tachometer1474636471549",
+    "textFilter25A4896A83E0487089E2B90C9AE57C8A",
+    "powerKPIMatrixEB2381CC88A8425FBEB1B07FF57784E6",
+    "BulletChart1443347686880",
+    "waterfall6C9ED82ABD1F44C4A0D590CE01EB5EE7",
+    "chartexposankeydiagramD70B8BC1836C4420A7BFCE36F48EE4BE"
+  ],
   "resourcePackages": [
     {
       "name": "SharedResources",
@@ -35,6 +72,11 @@
           "name": "CY26SU02",
           "path": "BaseThemes/CY26SU02.json",
           "type": "BaseTheme"
+        },
+        {
+          "name": "NewExecutive",
+          "path": "BuiltInThemes/NewExecutive.json",
+          "type": "CustomTheme"
         }
       ]
     }
@@ -48,9 +90,9 @@
     "useDefaultAggregateDisplayName": true
   },
   "slowDataSourceSettings": {
-    "isCrossHighlightingDisabled": true,
+    "isCrossHighlightingDisabled": false,
     "isSlicerSelectionsButtonEnabled": false,
     "isFilterSelectionsButtonEnabled": false,
-    "isApplyAllButtonEnabled": true
+    "isApplyAllButtonEnabled": false
   }
 }

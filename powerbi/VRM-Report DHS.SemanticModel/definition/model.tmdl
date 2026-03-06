@@ -3,10 +3,18 @@ model Model
 	defaultPowerBIDataSourceVersion: powerBI_V3
 	sourceQueryCulture: en-US
 	dataAccessOptions
+		fastCombine
 		legacyRedirects
 		returnErrorValuesAsNull
 
-annotation PBI_ProTooling = ["DevMode"]
+annotation PBI_ProTooling = ["DevMode","DaxQueryView_Desktop"]
+
+annotation PBI_QueryOrder = ["VRM_Report","DefenderApiBaseUrl","fn_PaginatedGet","EnrichmentFilePath","Vulnerabilities","MachineVulnerabilities","Machines","Enrichment","EnrichmentDefaults"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
 
 ref table VRM_Report
+ref table DateTableTemplate_ff7c929a-a705-420e-b661-52ae9f57c206
+ref table LocalDateTable_f5fd5720-20b8-4b7c-b54a-b27094884d8f
+ref table LocalDateTable_773ee2ea-7a6b-4099-ad8a-641c70d5c74b
 

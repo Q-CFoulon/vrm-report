@@ -10,5 +10,12 @@
     "type": "Default",
     "parameters": [],
     "referenceScope": "CrossReport"
-  }
+  },
+  "visualInteractions": [
+    {
+      "source": "a35dddf4a4bc445ead6b",
+      "target": "af1324fbd3b98c8051b9",
+      "type": "HighlightFilter"
+    }
+  ]
 }

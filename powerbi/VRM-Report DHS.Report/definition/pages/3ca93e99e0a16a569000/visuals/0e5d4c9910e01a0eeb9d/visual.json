@@ -1,0 +1,139 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+  "name": "0e5d4c9910e01a0eeb9d",
+  "position": {
+    "x": 10.40650406504065,
+    "y": 236.51145602365114,
+    "z": 3000,
+    "height": 465.45454545454544,
+    "width": 1269.5934959349593,
+    "tabOrder": 3000
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Status"
+                }
+              },
+              "queryRef": "VRM_Report.Status",
+              "nativeQueryRef": "Status",
+              "active": true
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Device OS"
+                }
+              },
+              "queryRef": "VRM_Report.Device OS",
+              "nativeQueryRef": "Device OS"
+            }
+          ]
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Pending Over 2 Months"
+                }
+              },
+              "queryRef": "VRM_Report.Pending Over 2 Months",
+              "nativeQueryRef": "Pending Over 2 Months"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Pending Over 3 Months"
+                }
+              },
+              "queryRef": "VRM_Report.Pending Over 3 Months",
+              "nativeQueryRef": "Pending Over 3 Months"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Pending Under 1 Month"
+                }
+              },
+              "queryRef": "VRM_Report.Pending Under 1 Month",
+              "nativeQueryRef": "Pending Under 1 Month"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Pending Over 1 Month"
+                }
+              },
+              "queryRef": "VRM_Report.Pending Over 1 Month",
+              "nativeQueryRef": "Pending Over 1 Month"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "VRM_Report"
+                  }
+                },
+                "Property": "Pending Over 1 Month"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
