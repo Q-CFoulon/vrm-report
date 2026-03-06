@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
     "type": "SemanticModel",
-    "displayName": "VRM-Report"
+    "displayName": "VRM-Report DHS"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "b6a565fc-bb2b-4053-9dd8-c4a12e009f25"
+    "logicalId": "5a03748d-d24b-4cea-95d7-da69d3ddd246"
   }
 }

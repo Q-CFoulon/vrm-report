@@ -359,6 +359,143 @@ $reportJson = [ordered]@{
 $reportJson | Out-File -FilePath $reportPath -Encoding utf8 -Force
 Write-Host "  + $projectName.Report/definition.pbir" -ForegroundColor Gray
 
+# ---------------------------------------------------------------------------
+# Enhanced report format files  (required by PBI Desktop when definition.pbir exists)
+# Schema versions sourced from PBI Desktop February 2026 (v2.151.1182.0).
+# ---------------------------------------------------------------------------
+Write-Host "Building enhanced report format..." -ForegroundColor Yellow
+
+# ── .platform ──
+[ordered]@{
+    '$schema' = "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json"
+    metadata  = [ordered]@{
+        type        = "Report"
+        displayName = $projectName
+    }
+    config = [ordered]@{
+        version   = "2.0"
+        logicalId = [guid]::NewGuid().ToString()
+    }
+} | ConvertTo-Json -Depth 5 |
+    Out-File (Join-Path $reportDir ".platform") -Encoding utf8
+Write-Host "  + .platform" -ForegroundColor Gray
+
+$defDir   = Join-Path $reportDir "definition"
+$pagesDir = Join-Path $defDir "pages"
+New-Item -Path $pagesDir -ItemType Directory -Force | Out-Null
+
+# ── definition/version.json ──
+[ordered]@{
+    '$schema' = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json"
+    version   = "2.0.0"
+} | ConvertTo-Json -Depth 5 |
+    Out-File (Join-Path $defDir "version.json") -Encoding utf8
+Write-Host "  + definition/version.json" -ForegroundColor Gray
+
+# ── StaticResources/SharedResources/BaseThemes/CY26SU02.json ──
+$themeDir = Join-Path $reportDir "StaticResources\SharedResources\BaseThemes"
+New-Item -Path $themeDir -ItemType Directory -Force | Out-Null
+$themeRef = Join-Path $scriptDir "data\references\CY26SU02.json"
+if (Test-Path $themeRef) {
+    Copy-Item $themeRef (Join-Path $themeDir "CY26SU02.json") -Force
+} else {
+    '{}' | Out-File (Join-Path $themeDir "CY26SU02.json") -Encoding utf8
+}
+Write-Host "  + StaticResources base theme" -ForegroundColor Gray
+
+# ── definition/report.json ──
+[ordered]@{
+    '$schema' = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.1.0/schema.json"
+    themeCollection = [ordered]@{
+        baseTheme = [ordered]@{
+            name = "CY26SU02"
+            reportVersionAtImport = [ordered]@{
+                visual = "2.6.0"
+                report = "3.1.0"
+                page   = "2.3.0"
+            }
+            type = "SharedResources"
+        }
+    }
+    objects = [ordered]@{
+        section = @(
+            [ordered]@{
+                properties = [ordered]@{
+                    verticalAlignment = [ordered]@{
+                        expr = [ordered]@{
+                            Literal = [ordered]@{ Value = "'Top'" }
+                        }
+                    }
+                }
+            }
+        )
+    }
+    resourcePackages = @(
+        [ordered]@{
+            name  = "SharedResources"
+            type  = "SharedResources"
+            items = @(
+                [ordered]@{
+                    name = "CY26SU02"
+                    path = "BaseThemes/CY26SU02.json"
+                    type = "BaseTheme"
+                }
+            )
+        }
+    )
+    settings = [ordered]@{
+        useStylableVisualContainerHeader = $true
+        exportDataMode                   = "AllowSummarized"
+        defaultDrillFilterOtherVisuals   = $true
+        allowChangeFilterTypes           = $true
+        useEnhancedTooltips              = $true
+        useDefaultAggregateDisplayName   = $true
+    }
+    slowDataSourceSettings = [ordered]@{
+        isCrossHighlightingDisabled       = $true
+        isSlicerSelectionsButtonEnabled   = $false
+        isFilterSelectionsButtonEnabled   = $false
+        isApplyAllButtonEnabled           = $true
+    }
+} | ConvertTo-Json -Depth 10 |
+    Out-File (Join-Path $defDir "report.json") -Encoding utf8
+Write-Host "  + definition/report.json" -ForegroundColor Gray
+
+# ── Pages ──
+$page1Id = "3ca93e99e0a16a569000"
+$page2Id = "d4e5f6a7b8c9d0e1f200"
+
+[ordered]@{
+    '$schema'      = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json"
+    pageOrder      = @($page1Id, $page2Id)
+    activePageName = $page1Id
+} | ConvertTo-Json -Depth 5 |
+    Out-File (Join-Path $pagesDir "pages.json") -Encoding utf8
+
+foreach ($pg in @(
+    @{ Id = $page1Id; Name = "Executive Summary" },
+    @{ Id = $page2Id; Name = "Detail Table" }
+)) {
+    $pgDir = Join-Path $pagesDir $pg.Id
+    New-Item -Path $pgDir -ItemType Directory -Force | Out-Null
+    [ordered]@{
+        '$schema'     = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json"
+        name          = $pg.Id
+        displayName   = $pg.Name
+        displayOption = "FitToPage"
+        height        = 720
+        width         = 1280
+        pageBinding   = [ordered]@{
+            name           = [guid]::NewGuid().ToString("N").Substring(0,20)
+            type           = "Default"
+            parameters     = @()
+            referenceScope = "CrossReport"
+        }
+    } | ConvertTo-Json -Depth 5 |
+        Out-File (Join-Path $pgDir "page.json") -Encoding utf8
+    Write-Host "  + Page: $($pg.Name)" -ForegroundColor Gray
+}
+
 # 4. VRM-Report.pbip  (main project file)
 $pbipPath = Join-Path $scriptDir "$projectName.pbip"
 $pbipJson = [ordered]@{

@@ -1,0 +1,390 @@
+table VRM_Report
+	lineageTag: efcf1b77-9d49-4514-800e-a265d04455d9
+
+	measure 'Total Vulnerabilities' = COUNTROWS('VRM_Report')
+		lineageTag: 9d3e8b06-a2c0-48fd-8d4d-47d1f87f8f7e
+
+	measure 'Unique CVEs' = DISTINCTCOUNT('VRM_Report'[CVE#])
+		lineageTag: fe91f018-6aee-4edd-a505-273c1d0933c0
+
+	measure 'Critical Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Critical")
+		lineageTag: d3278b58-8d6a-4144-a8fb-9b916b805a69
+
+	measure 'High Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "High")
+		lineageTag: 2479c884-8ee9-48fc-9384-83f9929a30a1
+
+	measure 'Exploitable Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Exploitable")
+		lineageTag: 577c9fb5-e3a8-4936-8691-5ec9e7c421af
+
+	measure 'Medium Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Medium")
+		lineageTag: 0f5e4c69-3b64-4466-9058-44801c76f34a
+
+	measure 'Low Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Low")
+		lineageTag: d08da9a7-3bd5-4a5d-b8c4-696703a8c888
+
+	measure 'Patched Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Patched")
+		lineageTag: 73fb988e-556b-4a25-96a9-7d1ce3773d67
+
+	measure 'Pending Under 1 Month' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending < 1 month")
+		lineageTag: 23991da7-63ac-45a8-881e-97021a2a56c1
+
+	measure 'Pending Over 1 Month' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 1 month")
+		lineageTag: c2ec8935-95bc-4728-a971-7e6a89938582
+
+	measure 'Pending Over 2 Months' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 2 months")
+		lineageTag: 0e344437-52fd-457f-bddb-95f85fcd2920
+
+	measure 'Pending Over 3 Months' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 3 months")
+		lineageTag: 35254a45-55c2-4566-adc1-0b2fa8dfc63d
+
+	measure 'Risk Accepted Count' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Risk Acceptance] = "Yes")
+		lineageTag: a7a52a56-960a-4d1c-bcb5-5b15948d445f
+
+	measure 'Risk Accepted Pct' = DIVIDE([Risk Accepted Count], [Total Vulnerabilities], 0)
+		lineageTag: a5685654-26a9-4cd8-877e-515f17ba18e3
+
+	measure 'Average CVSS' = AVERAGE('VRM_Report'[CVSS Score])
+		lineageTag: 7e88a6b6-2ded-40b4-b6ce-6cf3fd6abf28
+
+	measure 'Critical or Exploitable Unpatched' =
+			CALCULATE(
+			    COUNTROWS('VRM_Report'),
+			    'VRM_Report'[Criticality] IN {"Critical", "Exploitable"},
+			    'VRM_Report'[Status] <> "Patched"
+			)
+		lineageTag: bb9bf3b5-4c55-45df-851b-253030a2df4a
+
+	measure 'Overdue Over 90 Days' = CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 3 months")
+		lineageTag: e2867f80-f0be-4af8-a151-863ab22a84f5
+
+	measure 'Avg Days Open' =
+			AVERAGEX(
+			    FILTER('VRM_Report', 'VRM_Report'[Status] <> "Patched"),
+			    DATEDIFF('VRM_Report'[Date First Detected], TODAY(), DAY)
+			)
+		lineageTag: 944655fb-b4a9-4858-9a61-7fae73ec29f3
+
+	column 'Unique ID'
+		dataType: string
+		lineageTag: 2ed6553a-f695-4401-a03e-0003b141a1c0
+		summarizeBy: none
+		sourceColumn: Unique ID
+
+	column Criticality
+		dataType: string
+		lineageTag: 1b98ac1b-7969-4fd3-bc6d-81a7f16c4e85
+		summarizeBy: none
+		sourceColumn: Criticality
+
+	column CVE#
+		dataType: string
+		lineageTag: 96a83ec3-8961-4c42-84d0-acd19ed56b3b
+		summarizeBy: none
+		sourceColumn: CVE#
+
+	column 'CVSS Score'
+		dataType: double
+		lineageTag: 8ba77613-c64d-4a9f-95ed-57ca2f59cda9
+		summarizeBy: none
+		sourceColumn: CVSS Score
+
+	column Description
+		dataType: string
+		lineageTag: 2fde4e6b-890b-4752-bd6b-3b17676b508b
+		summarizeBy: none
+		sourceColumn: Description
+
+	column 'Device OS'
+		dataType: string
+		lineageTag: 479d10f3-a6e9-4bf8-af8c-05c51cbceae9
+		summarizeBy: none
+		sourceColumn: Device OS
+
+	column 'Device Type'
+		dataType: string
+		lineageTag: 660ed302-ed1b-4636-8fb7-53874417f927
+		summarizeBy: none
+		sourceColumn: Device Type
+
+	column 'Date First Detected'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d110e616-f8ca-4d9c-bd45-b237fc61231e
+		summarizeBy: none
+		sourceColumn: Date First Detected
+
+	column 'Date Last Detected'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b9ec6085-c8e8-4d8d-8bf9-8b544d646b03
+		summarizeBy: none
+		sourceColumn: Date Last Detected
+
+	column Status
+		dataType: string
+		lineageTag: 310f3a06-cbbc-4b7e-8b4b-11e6f88b7838
+		summarizeBy: none
+		sourceColumn: Status
+
+	column 'Risk Acceptance'
+		dataType: string
+		lineageTag: 62c39971-491f-40dd-8ac7-268179ca937d
+		summarizeBy: none
+		sourceColumn: Risk Acceptance
+
+	column 'Asset Criticality'
+		dataType: string
+		lineageTag: dd3c916f-1287-4d90-b604-85cfb999671f
+		summarizeBy: none
+		sourceColumn: Asset Criticality
+
+	column 'Data Type'
+		dataType: string
+		lineageTag: 0cc66b98-7f62-41d0-bb68-b582402e1746
+		summarizeBy: none
+		sourceColumn: Data Type
+
+	column Location
+		dataType: string
+		lineageTag: aa721ca2-09ac-4282-bd37-72d6d1e85e51
+		summarizeBy: none
+		sourceColumn: Location
+
+	column Notes
+		dataType: string
+		lineageTag: c51f8655-7563-4801-b9e8-fdd491cc609e
+		summarizeBy: none
+		sourceColumn: Notes
+
+	column Product
+		dataType: string
+		lineageTag: 4baec548-7916-41a3-a4d1-5445ed367eae
+		summarizeBy: none
+		sourceColumn: Product
+
+	partition VRM_Report-partition = m
+		mode: import
+		source =
+				// ============================================================================
+				// VRM_Report  –  Final report table  (columns A – O)
+				// ============================================================================
+				// Joins MachineVulnerabilities × Vulnerabilities × Machines × Enrichment and
+				// computes every derived column exactly as the TypeScript mapper does.
+				//
+				// Depends on queries:
+				//   MachineVulnerabilities, Vulnerabilities, Machines,
+				//   Enrichment, EnrichmentDefaults, fn_PaginatedGet
+				// ============================================================================
+				
+				let
+				    // ── 0.  Load source queries ─────────────────────────────────────────
+				    MV       = MachineVulnerabilities,
+				    Vulns    = Vulnerabilities,
+				    Machines = Machines,
+				    Enrich   = Enrichment,
+				    Defaults = EnrichmentDefaults,
+				
+				    // ── 1.  Join MachineVulnerabilities → Vulnerabilities on cveId ──────
+				    JoinVuln = Table.NestedJoin(
+				        MV, {"cveId"}, Vulns, {"id"}, "vuln", JoinKind.Inner
+				    ),
+				    ExpandVuln = Table.ExpandTableColumn(JoinVuln, "vuln", {
+				        "description", "severity", "cvssV3", "publishedOn", "updatedOn",
+				        "firstDetected", "publicExploit", "exploitVerified", "status"
+				    }, {
+				        "v.description", "v.severity", "v.cvssV3", "v.publishedOn",
+				        "v.updatedOn", "v.firstDetected", "v.publicExploit",
+				        "v.exploitVerified", "v.status"
+				    }),
+				
+				    // ── 2.  Join → Machines on machineId for OS / hostname ─────────────
+				    JoinMachine = Table.NestedJoin(
+				        ExpandVuln, {"machineId"}, Machines, {"id"}, "machine", JoinKind.LeftOuter
+				    ),
+				    ExpandMachine = Table.ExpandTableColumn(JoinMachine, "machine", {
+				        "computerDnsName", "osPlatform", "rbacGroupName", "lastIpAddress"
+				    }, {
+				        "m.computerDnsName", "m.osPlatform", "m.rbacGroupName", "m.lastIpAddress"
+				    }),
+				
+				    // ── 3.  Join → Enrichment  (try hostname, then rbacGroup) ──────────
+				    //        Hostname match
+				    JoinEnrichHost = Table.NestedJoin(
+				        ExpandMachine, {"m.computerDnsName"},
+				        Table.SelectRows(Enrich, each [matchType] = "hostname"), {"matchKey"},
+				        "enrich_host", JoinKind.LeftOuter
+				    ),
+				    ExpandEnrichHost = Table.ExpandTableColumn(JoinEnrichHost, "enrich_host", {
+				        "deviceType", "assetCriticality", "dataType", "location", "notes"
+				    }, {
+				        "eh.deviceType", "eh.assetCriticality", "eh.dataType", "eh.location", "eh.notes"
+				    }),
+				
+				    //        RBAC group match (fallback)
+				    JoinEnrichGroup = Table.NestedJoin(
+				        ExpandEnrichHost, {"m.rbacGroupName"},
+				        Table.SelectRows(Enrich, each [matchType] = "rbacGroup"), {"matchKey"},
+				        "enrich_grp", JoinKind.LeftOuter
+				    ),
+				    ExpandEnrichGroup = Table.ExpandTableColumn(JoinEnrichGroup, "enrich_grp", {
+				        "deviceType", "assetCriticality", "dataType", "location", "notes"
+				    }, {
+				        "eg.deviceType", "eg.assetCriticality", "eg.dataType", "eg.location", "eg.notes"
+				    }),
+				
+				    //        IP match (second fallback)
+				    JoinEnrichIP = Table.NestedJoin(
+				        ExpandEnrichGroup, {"m.lastIpAddress"},
+				        Table.SelectRows(Enrich, each [matchType] = "ipAddress"), {"matchKey"},
+				        "enrich_ip", JoinKind.LeftOuter
+				    ),
+				    ExpandEnrichIP = Table.ExpandTableColumn(JoinEnrichIP, "enrich_ip", {
+				        "deviceType", "assetCriticality", "dataType", "location", "notes"
+				    }, {
+				        "ei.deviceType", "ei.assetCriticality", "ei.dataType", "ei.location", "ei.notes"
+				    }),
+				
+				    // ── 4.  Add row index for Unique ID (column A) ─────────────────────
+				    Indexed = Table.AddIndexColumn(ExpandEnrichIP, "RowNum", 1, 1, Int64.Type),
+				
+				    // ── 5.  Compute derived columns ────────────────────────────────────
+				
+				    // --- Column A: Unique ID ---
+				    AddUniqueId = Table.AddColumn(Indexed, "A_UniqueId",
+				        each Text.From([RowNum]), type text),
+				
+				    // --- Column B: Criticality ---
+				    //     If publicExploit or exploitVerified → "Exploitable"
+				    //     else map severity string
+				    AddCriticality = Table.AddColumn(AddUniqueId, "B_Criticality", each
+				        if [v.publicExploit] = true or [v.exploitVerified] = true then "Exploitable"
+				        else if [v.severity] = "Critical" then "Critical"
+				        else if [v.severity] = "High"     then "High"
+				        else if [v.severity] = "Medium"   then "Medium"
+				        else "Low",
+				        type text),
+				
+				    // --- Column C: CVE / CVSS ---
+				    AddCveId = Table.AddColumn(AddCriticality, "C_CveId",
+				        each [cveId], type text),
+				    AddCvss  = Table.AddColumn(AddCveId, "C_CvssScore",
+				        each [v.cvssV3], type number),
+				
+				    // --- Column D: Description ---
+				    AddDesc = Table.AddColumn(AddCvss, "D_Description",
+				        each [v.description], type text),
+				
+				    // --- Column E: Device OS  (normalise the API's osPlatform string) ---
+				    AddOS = Table.AddColumn(AddDesc, "E_DeviceOS", each
+				        let p = Text.Lower([m.osPlatform] ?? "") in
+				        if Text.Contains(p, "windows11")         then "Windows 11"
+				        else if Text.Contains(p, "windows10")    then "Windows 10"
+				        else if Text.Contains(p, "windowsserver2022") then "Windows Server 2022"
+				        else if Text.Contains(p, "windowsserver2019") or Text.Contains(p, "windows_server_2019") then "Windows Server 2019"
+				        else if Text.Contains(p, "windowsserver2016") or Text.Contains(p, "windows_server_2016") then "Windows Server 2016"
+				        else if Text.Contains(p, "windows_server_2012") then "Windows Server 2012 R2"
+				        else if Text.Contains(p, "linux")   then "Linux"
+				        else if Text.Contains(p, "macos")   then "macOS"
+				        else if Text.Contains(p, "ios")     then "iOS"
+				        else if Text.Contains(p, "android") then "Android"
+				        else ([m.osPlatform] ?? "Unknown"),
+				        type text),
+				
+				    // --- Column F: Device Type  (enrichment → default) ---
+				    AddDeviceType = Table.AddColumn(AddOS, "F_DeviceType", each
+				        [eh.deviceType] ?? [eg.deviceType] ?? [ei.deviceType]
+				            ?? Defaults[DeviceType],
+				        type text),
+				
+				    // --- Column G: Date First Detected ---
+				    AddFirstDetected = Table.AddColumn(AddDeviceType, "G_DateFirstDetected", each
+				        [v.firstDetected] ?? [v.publishedOn],
+				        type datetime),
+				
+				    // --- Column H: Date Last Detected ---
+				    AddLastDetected = Table.AddColumn(AddFirstDetected, "H_DateLastDetected", each
+				        [v.updatedOn],
+				        type datetime),
+				
+				    // --- Column I: Status  (aging bucket from first-detected) ---
+				    AddStatus = Table.AddColumn(AddLastDetected, "I_Status", each
+				        if [v.status] = "NoActionRequired" then "Patched"
+				        else
+				            let
+				                first = [v.firstDetected] ?? [v.publishedOn],
+				                days  = if first <> null
+				                        then Duration.TotalDays(DateTime.LocalNow() - first)
+				                        else 0
+				            in
+				                if days > 90 then "Pending > 3 months"
+				                else if days > 60 then "Pending > 2 months"
+				                else if days > 30 then "Pending > 1 month"
+				                else "Pending < 1 month",
+				        type text),
+				
+				    // --- Column J: Risk Acceptance ---
+				    AddRisk = Table.AddColumn(AddStatus, "J_RiskAcceptance", each
+				        if [v.status] = "UnderException" or [v.status] = "PartialException"
+				        then "Yes" else "No",
+				        type text),
+				
+				    // --- Column K: Asset Criticality ---
+				    AddAssetCrit = Table.AddColumn(AddRisk, "K_AssetCriticality", each
+				        [eh.assetCriticality] ?? [eg.assetCriticality] ?? [ei.assetCriticality]
+				            ?? Defaults[AssetCriticality],
+				        type text),
+				
+				    // --- Column L: Data Type ---
+				    AddDataType = Table.AddColumn(AddAssetCrit, "L_DataType", each
+				        [eh.dataType] ?? [eg.dataType] ?? [ei.dataType]
+				            ?? Defaults[DataType],
+				        type text),
+				
+				    // --- Column M: Location ---
+				    AddLocation = Table.AddColumn(AddDataType, "M_Location", each
+				        [eh.location] ?? [eg.location] ?? [ei.location]
+				            ?? Defaults[Location],
+				        type text),
+				
+				    // --- Column N: Notes ---
+				    AddNotes = Table.AddColumn(AddLocation, "N_Notes", each
+				        [eh.notes] ?? [eg.notes] ?? [ei.notes] ?? "",
+				        type text),
+				
+				    // --- Column O: Product (bonus context from Defender) ---
+				    AddProduct = Table.AddColumn(AddNotes, "O_Product", each
+				        [productName] ?? "",
+				        type text),
+				
+				    // ── 6.  Select only the final report columns ───────────────────────
+				    FinalColumns = Table.SelectColumns(AddProduct, {
+				        "A_UniqueId", "B_Criticality", "C_CveId", "C_CvssScore",
+				        "D_Description", "E_DeviceOS", "F_DeviceType",
+				        "G_DateFirstDetected", "H_DateLastDetected",
+				        "I_Status", "J_RiskAcceptance",
+				        "K_AssetCriticality", "L_DataType", "M_Location",
+				        "N_Notes", "O_Product"
+				    }),
+				
+				    // Friendly column names for the report
+				    Renamed = Table.RenameColumns(FinalColumns, {
+				        {"A_UniqueId",          "Unique ID"},
+				        {"B_Criticality",       "Criticality"},
+				        {"C_CveId",             "CVE#"},
+				        {"C_CvssScore",         "CVSS Score"},
+				        {"D_Description",       "Description"},
+				        {"E_DeviceOS",          "Device OS"},
+				        {"F_DeviceType",        "Device Type"},
+				        {"G_DateFirstDetected", "Date First Detected"},
+				        {"H_DateLastDetected",  "Date Last Detected"},
+				        {"I_Status",            "Status"},
+				        {"J_RiskAcceptance",    "Risk Acceptance"},
+				        {"K_AssetCriticality",  "Asset Criticality"},
+				        {"L_DataType",          "Data Type"},
+				        {"M_Location",          "Location"},
+				        {"N_Notes",             "Notes"},
+				        {"O_Product",           "Product"}
+				    })
+				in
+				    Renamed
+

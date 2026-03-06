@@ -1,0 +1,271 @@
+expression DefenderApiBaseUrl = "https://api.securitycenter.microsoft.com" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 7f04b563-2976-4383-b7a2-63a05399c864
+
+expression fn_PaginatedGet =
+		// ============================================================================
+		// fn_PaginatedGet  –  Reusable OData pagination helper
+		// ============================================================================
+		// Calls the Defender for Endpoint REST API and follows @odata.nextLink until
+		// all pages are consumed.  Returns a combined list of records.
+		//
+		// Parameters:
+		//   relativePath  – e.g. "/api/vulnerabilities"
+		//
+		// Prerequisites:
+		//   • Data source privacy for api.securitycenter.microsoft.com set to
+		//     Organizational.
+		//   • Credentials configured as "Organizational account" for the base URL.
+		// ============================================================================
+		
+		let
+		    fn = (relativePath as text) as list =>
+		        let
+		            BaseUrl = DefenderApiBaseUrl,
+		
+		            // First page uses RelativePath option for credential resolution
+		            GetFirstPage = () =>
+		                let
+		                    Raw  = Web.Contents(BaseUrl, [RelativePath = relativePath, Headers = [Accept = "application/json"]]),
+		                    Json = Json.Document(Raw),
+		                    Data = Json[value],
+		                    Next = try Json[#"@odata.nextLink"] otherwise null
+		                in
+		                    [Data = Data, NextLink = Next],
+		
+		            // Subsequent pages follow the full @odata.nextLink URL
+		            GetNextPage = (url as text) =>
+		                let
+		                    Raw  = Web.Contents(url),
+		                    Json = Json.Document(Raw),
+		                    Data = Json[value],
+		                    Next = try Json[#"@odata.nextLink"] otherwise null
+		                in
+		                    [Data = Data, NextLink = Next],
+		
+		            Accumulate = (accum as list, nextUrl as nullable text, isFirst as logical) =>
+		                let
+		                    Page   = if isFirst then GetFirstPage() else GetNextPage(nextUrl),
+		                    Merged = accum & Page[Data],
+		                    Result = if Page[NextLink] <> null
+		                             then @Accumulate(Merged, Page[NextLink], false)
+		                             else Merged
+		                in
+		                    Result,
+		
+		            AllRecords = Accumulate({}, null, true)
+		        in
+		            AllRecords
+		in
+		    fn
+	lineageTag: a542a2b4-e4c1-4e0d-ac9b-4f6c574e5837
+
+expression EnrichmentFilePath = "C:\Users\CFoulon\OneDrive - Quisitive\Apps\vrm-report\data\enrichment\asset-enrichment.json" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 05261260-d595-4d84-89ed-7ff9c5d55813
+
+expression Vulnerabilities =
+		// ============================================================================
+		// Vulnerabilities  –  GET /api/vulnerabilities
+		// ============================================================================
+		// All known CVEs from Microsoft Defender for Endpoint.
+		// Feeds columns B (Criticality), C (CVE/CVSS), D (Description), G, H, I, J.
+		// ============================================================================
+		
+		let
+		    RawList = fn_PaginatedGet("/api/vulnerabilities"),
+		
+		    AsTable = Table.FromList(RawList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    Expanded = Table.ExpandRecordColumn(
+		        AsTable, "Column1",
+		        {
+		            "id", "name", "description", "severity",
+		            "cvssV3", "cvssVector",
+		            "exposedMachines", "publishedOn", "updatedOn", "firstDetected",
+		            "publicExploit", "exploitVerified", "exploitInKit",
+		            "exploitTypes", "exploitUris",
+		            "cveSupportability", "tags", "epss",
+		            "status"
+		        }
+		    ),
+		
+		    // Type the key columns
+		    Typed = Table.TransformColumnTypes(Expanded, {
+		        {"id",              type text},
+		        {"name",            type text},
+		        {"description",     type text},
+		        {"severity",        type text},
+		        {"cvssV3",          type number},
+		        {"exposedMachines", Int64.Type},
+		        {"publishedOn",     type datetime},
+		        {"updatedOn",       type datetime},
+		        {"firstDetected",   type datetime},
+		        {"publicExploit",   type logical},
+		        {"exploitVerified", type logical},
+		        {"exploitInKit",    type logical},
+		        {"epss",            type number},
+		        {"status",          type text}
+		    })
+		in
+		    Typed
+	lineageTag: 27d0ca43-5e96-4bba-bb7a-043fac70a5df
+
+expression MachineVulnerabilities =
+		// ============================================================================
+		// MachineVulnerabilities  –  GET /api/vulnerabilities/machinesVulnerabilities
+		// ============================================================================
+		// One row per machine × CVE × product.  This is the primary join table for the
+		// VRM report (links a CVE to a specific device).
+		// ============================================================================
+		
+		let
+		    RawList = fn_PaginatedGet("/api/vulnerabilities/machinesVulnerabilities"),
+		
+		    AsTable = Table.FromList(RawList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    Expanded = Table.ExpandRecordColumn(
+		        AsTable, "Column1",
+		        {
+		            "id", "cveId", "machineId",
+		            "fixingKbId",
+		            "productName", "productVendor", "productVersion",
+		            "severity"
+		        }
+		    ),
+		
+		    Typed = Table.TransformColumnTypes(Expanded, {
+		        {"id",             type text},
+		        {"cveId",          type text},
+		        {"machineId",      type text},
+		        {"fixingKbId",     type text},
+		        {"productName",    type text},
+		        {"productVendor",  type text},
+		        {"productVersion", type text},
+		        {"severity",       type text}
+		    })
+		in
+		    Typed
+	lineageTag: dbb70e76-6b60-47bc-8d9b-4fae61cbde66
+
+expression Machines =
+		// ============================================================================
+		// Machines  –  GET /api/machines
+		// ============================================================================
+		// Machine reference data for Device OS (column E) and hostname lookups.
+		// Only a subset of fields is kept to reduce memory usage.
+		// ============================================================================
+		
+		let
+		    RawList = fn_PaginatedGet("/api/machines"),
+		
+		    AsTable = Table.FromList(RawList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    Expanded = Table.ExpandRecordColumn(
+		        AsTable, "Column1",
+		        {
+		            "id", "computerDnsName", "osPlatform",
+		            "rbacGroupName", "lastIpAddress",
+		            "healthStatus", "riskScore", "exposureLevel", "deviceValue"
+		        }
+		    ),
+		
+		    Typed = Table.TransformColumnTypes(Expanded, {
+		        {"id",              type text},
+		        {"computerDnsName", type text},
+		        {"osPlatform",      type text},
+		        {"rbacGroupName",   type text},
+		        {"lastIpAddress",   type text},
+		        {"healthStatus",    type text},
+		        {"riskScore",       type text},
+		        {"exposureLevel",   type text},
+		        {"deviceValue",     type text}
+		    })
+		in
+		    Typed
+	lineageTag: df605b1b-8b7b-48bb-a1c6-eca1031cfec2
+
+expression Enrichment =
+		// ============================================================================
+		// Enrichment  –  Local JSON business-context data
+		// ============================================================================
+		// Loads asset-enrichment.json (same format as the Node.js project) and
+		// provides columns that Defender for Endpoint does not supply:
+		//   F – Device Type,  K – Asset Criticality,  L – Data Type,
+		//   M – Location,     N – Notes
+		//
+		// Change the FilePath parameter below to point to your enrichment file.
+		// ============================================================================
+		
+		let
+		    FilePath = EnrichmentFilePath,
+		
+		    RawJson  = Json.Document(File.Contents(FilePath)),
+		
+		    // Extract defaults
+		    Defaults = RawJson[defaults],
+		    DefaultAssetCriticality = try Defaults[assetCriticality] otherwise "Moderate Impact",
+		    DefaultDataType         = try Defaults[dataType]         otherwise "End Point User",
+		    DefaultLocation         = try Defaults[location]         otherwise "Internal",
+		    DefaultDeviceType       = try Defaults[deviceType]       otherwise "Desktop",
+		
+		    // Extract asset list → table
+		    Assets  = RawJson[assets],
+		    AsTable = Table.FromList(Assets, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    Expanded = Table.ExpandRecordColumn(
+		        AsTable, "Column1",
+		        {"matchKey", "matchType", "deviceType", "assetCriticality", "dataType", "location", "notes"}
+		    ),
+		
+		    // Replace nulls with defaults
+		    WithDefaults = Table.ReplaceValue(
+		        Table.ReplaceValue(
+		            Table.ReplaceValue(
+		                Table.ReplaceValue(
+		                    Expanded,
+		                    null, DefaultDeviceType,
+		                    Replacer.ReplaceValue, {"deviceType"}
+		                ),
+		                null, DefaultAssetCriticality,
+		                Replacer.ReplaceValue, {"assetCriticality"}
+		            ),
+		            null, DefaultDataType,
+		            Replacer.ReplaceValue, {"dataType"}
+		        ),
+		        null, DefaultLocation,
+		        Replacer.ReplaceValue, {"location"}
+		    ),
+		
+		    // Fill empty notes with blank string
+		    Final = Table.ReplaceValue(WithDefaults, null, "", Replacer.ReplaceValue, {"notes"}),
+		
+		    // Record of default values so VRM_Report can reference them
+		    _Defaults = [
+		        DefaultDeviceType       = DefaultDeviceType,
+		        DefaultAssetCriticality = DefaultAssetCriticality,
+		        DefaultDataType         = DefaultDataType,
+		        DefaultLocation         = DefaultLocation
+		    ]
+		in
+		    Final
+	lineageTag: e5b5c70b-7c7d-4e27-b74e-ba3ba5a029d1
+
+expression EnrichmentDefaults =
+		// ============================================================================
+		// EnrichmentDefaults  –  Expose defaults from enrichment JSON
+		// ============================================================================
+		// Reads the same JSON file as Enrichment and returns a single record
+		// containing the default values.  Referenced by VRM_Report when no
+		// enrichment match is found.
+		// ============================================================================
+		
+		let
+		    FilePath = EnrichmentFilePath,
+		    RawJson  = Json.Document(File.Contents(FilePath)),
+		    Defaults = RawJson[defaults],
+		
+		    Result = [
+		        DeviceType       = try Defaults[deviceType]       otherwise "Desktop",
+		        AssetCriticality = try Defaults[assetCriticality] otherwise "Moderate Impact",
+		        DataType         = try Defaults[dataType]         otherwise "End Point User",
+		        Location         = try Defaults[location]         otherwise "Internal"
+		    ]
+		in
+		    Result
+	lineageTag: 50fa5f92-ac4f-4ca4-b961-e4d4a99d4eff
+

@@ -3,7 +3,7 @@
   "version": "4.0",
   "datasetReference": {
     "byPath": {
-      "path": "../VRM-Report.SemanticModel"
+      "path": "../VRM-Report DHS.SemanticModel"
     }
   }
 }
