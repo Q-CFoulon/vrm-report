@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Example asset enrichment file for VRM Report. Provides business-context fields not available from Defender APIs.",
+  "defaults": {
+    "assetCriticality": "Moderate Impact",
+    "dataType": "End Point User",
+    "location": "Internal",
+    "deviceType": "Desktop"
+  },
+  "assets": [
+    {
+      "matchKey": "dc01.contoso.com",
+      "matchType": "hostname",
+      "deviceType": "Server",
+      "assetCriticality": "Critical Impact",
+      "dataType": "IP",
+      "location": "Internal",
+      "notes": "Primary domain controller"
+    },
+    {
+      "matchKey": "web-prod-01.contoso.com",
+      "matchType": "hostname",
+      "deviceType": "Server",
+      "assetCriticality": "Critical Impact",
+      "dataType": "PII",
+      "location": "Customer Facing",
+      "notes": "Production web server — handles customer PII"
+    },
+    {
+      "matchKey": "GroupTwo",
+      "matchType": "rbacGroup",
+      "deviceType": "Laptop",
+      "assetCriticality": "Low Impact",
+      "dataType": "End Point User",
+      "location": "Internal",
+      "notes": ""
+    },
+    {
+      "matchKey": "finance-db.contoso.com",
+      "matchType": "hostname",
+      "deviceType": "VM",
+      "assetCriticality": "Critical Impact",
+      "dataType": "Finance",
+      "location": "Internal",
+      "notes": "Finance database server — SOX compliance scope"
+    },
+    {
+      "matchKey": "iot-sensor-floor3",
+      "matchType": "hostname",
+      "deviceType": "IoT",
+      "assetCriticality": "Low Impact",
+      "dataType": "IP",
+      "location": "Internal",
+      "notes": "Environmental monitoring sensor"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "VRM-Report"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "4f491c93-eac2-4eca-8ff1-f5384b2b6161"
+  }
+}

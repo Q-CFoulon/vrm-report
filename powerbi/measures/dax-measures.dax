@@ -1,0 +1,88 @@
+// ============================================================================
+// DAX Measures for the VRM Power BI Report
+// ============================================================================
+// Copy-paste each measure into Power BI Desktop (Modeling > New Measure).
+// They assume the main table is named "VRM_Report".
+// ============================================================================
+
+
+// ── Totals ─────────────────────────────────────────────────────────────
+
+Total Vulnerabilities = COUNTROWS('VRM_Report')
+
+Unique CVEs = DISTINCTCOUNT('VRM_Report'[CVE#])
+
+Unique Devices =
+    CALCULATE(
+        DISTINCTCOUNT('MachineVulnerabilities'[machineId])
+    )
+
+
+// ── Criticality Counts ─────────────────────────────────────────────────
+
+Critical Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Critical")
+
+High Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "High")
+
+Exploitable Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Exploitable")
+
+Medium Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Medium")
+
+Low Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = "Low")
+
+
+// ── Status Counts ──────────────────────────────────────────────────────
+
+Patched Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Patched")
+
+Pending Under 1 Month =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending < 1 month")
+
+Pending Over 1 Month =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 1 month")
+
+Pending Over 2 Months =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 2 months")
+
+Pending Over 3 Months =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Status] = "Pending > 3 months")
+
+
+// ── Risk Metrics ───────────────────────────────────────────────────────
+
+Risk Accepted Count =
+    CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Risk Acceptance] = "Yes")
+
+Risk Accepted Pct =
+    DIVIDE([Risk Accepted Count], [Total Vulnerabilities], 0)
+
+Average CVSS =
+    AVERAGE('VRM_Report'[CVSS Score])
+
+Critical or Exploitable Unpatched =
+    CALCULATE(
+        COUNTROWS('VRM_Report'),
+        'VRM_Report'[Criticality] IN {"Critical", "Exploitable"},
+        'VRM_Report'[Status] <> "Patched"
+    )
+
+Overdue Over 90 Days =
+    CALCULATE(
+        COUNTROWS('VRM_Report'),
+        'VRM_Report'[Status] = "Pending > 3 months"
+    )
+
+
+// ── Aging Average (days since first detected, for unpatched only) ──────
+
+Avg Days Open =
+    AVERAGEX(
+        FILTER('VRM_Report', 'VRM_Report'[Status] <> "Patched"),
+        DATEDIFF('VRM_Report'[Date First Detected], TODAY(), DAY)
+    )

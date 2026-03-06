@@ -1,0 +1,201 @@
+expression CsvFolderPath = "C:\Users\CFoulon\OneDrive - Quisitive\Documents\NWPump" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 1801996c-aa6b-4418-b1c4-e7207a163bef
+
+expression EnrichmentFilePath = "C:\Users\CFoulon\OneDrive - Quisitive\Apps\vrm-report\data\enrichment\asset-enrichment.json" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 3ec85a23-697c-44d7-aead-17f4c8180b37
+
+expression Vulnerabilities =
+		// ============================================================================
+		// Vulnerabilities (CSV)  –  Defender portal Weaknesses export
+		// ============================================================================
+		// File: export-tvm-vulnerabilities.csv
+		// Export from: Security > Vulnerability Management > Weaknesses > Export
+		//
+		// Row 1 is a title line ("Vulnerabilities Export,...") – skipped.
+		// Row 2 contains the actual column headers.
+		//
+		// Headers: Name, Severity, CVSS v3, Epss score, Age (days), Published,
+		//          First detected, Updated, Has Exploit, Has Known Threats,
+		//          Has Associated Alerts, Related Software, Exposed Machines,
+		//          Description, Status
+		// ============================================================================
+		
+		let
+		    Source = Csv.Document(
+		        File.Contents(CsvFolderPath & "\export-tvm-vulnerabilities.csv"),
+		        [Delimiter = ",", Columns = 15, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+		    ),
+		
+		    // Skip the title row, promote row 2 as headers
+		    SkipTitle = Table.Skip(Source, 1),
+		    Promoted  = Table.PromoteHeaders(SkipTitle, [PromoteAllScalars = true]),
+		
+		    // Parse dates: portal uses "05 Mar, 2026" format – strip comma first
+		    CleanDates = Table.TransformColumns(Promoted, {
+		        {"Published",      each Text.Replace(_ ?? "", ",", ""), type text},
+		        {"First detected", each Text.Replace(_ ?? "", ",", ""), type text},
+		        {"Updated",        each Text.Replace(_ ?? "", ",", ""), type text}
+		    }),
+		
+		    Typed = Table.TransformColumnTypes(CleanDates, {
+		        {"Name",                  type text},
+		        {"Severity",              type text},
+		        {"CVSS v3",               type number},
+		        {"Epss score",            type number},
+		        {"Age (days)",            Int64.Type},
+		        {"Published",             type date},
+		        {"First detected",        type date},
+		        {"Updated",               type date},
+		        {"Has Exploit",           type text},
+		        {"Has Known Threats",     type text},
+		        {"Has Associated Alerts", type text},
+		        {"Related Software",      type text},
+		        {"Exposed Machines",      Int64.Type},
+		        {"Description",           type text},
+		        {"Status",                type text}
+		    })
+		in
+		    Typed
+	lineageTag: c4ca8a1b-92f0-44fe-90b1-dd3fe54f7631
+
+expression Machines =
+		// ============================================================================
+		// Machines (CSV)  –  Defender portal Devices export
+		// ============================================================================
+		// File: devices.csv
+		// Export from: Assets > Devices > Export
+		//
+		// Headers include: Device ID, Device Name, Device Type, OS Platform,
+		//                  Group, Device IPs, Risk Level, Exposure Level, etc.
+		// ============================================================================
+		
+		let
+		    Source = Csv.Document(
+		        File.Contents(CsvFolderPath & "\devices.csv"),
+		        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+		    ),
+		    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+		
+		    // Rename to match the column names the API-mode Machines query uses,
+		    // so VRM_Report can reference them consistently
+		    Renamed = Table.RenameColumns(Promoted, {
+		        {"Device ID",    "id"},
+		        {"Device Name",  "computerDnsName"},
+		        {"OS Platform",  "osPlatform"},
+		        {"Group",        "rbacGroupName"},
+		        {"Device IPs",   "lastIpAddress"},
+		        {"Health Status", "healthStatus"},
+		        {"Risk Level",   "riskScore"},
+		        {"Exposure Level", "exposureLevel"},
+		        {"Device Type",  "portalDeviceType"}
+		    }, MissingField.Ignore),
+		
+		    // Take only the first IP from the comma-separated list
+		    CleanIP = Table.TransformColumns(Renamed, {
+		        {"lastIpAddress", each Text.Trim(Text.BeforeDelimiter(_ ?? "", ",")), type text}
+		    }),
+		
+		    Typed = Table.TransformColumnTypes(CleanIP, {
+		        {"id",               type text},
+		        {"computerDnsName",  type text},
+		        {"osPlatform",       type text},
+		        {"rbacGroupName",    type text},
+		        {"lastIpAddress",    type text},
+		        {"healthStatus",     type text},
+		        {"riskScore",        type text},
+		        {"exposureLevel",    type text},
+		        {"portalDeviceType", type text}
+		    }, MissingField.Ignore)
+		in
+		    Typed
+	lineageTag: 0198f3e5-5089-4528-a72d-2627d25e61a8
+
+expression Enrichment =
+		// ============================================================================
+		// Enrichment  –  Local JSON business-context data
+		// ============================================================================
+		// Loads asset-enrichment.json (same format as the Node.js project) and
+		// provides columns that Defender for Endpoint does not supply:
+		//   F – Device Type,  K – Asset Criticality,  L – Data Type,
+		//   M – Location,     N – Notes
+		//
+		// Change the FilePath parameter below to point to your enrichment file.
+		// ============================================================================
+		
+		let
+		    FilePath = EnrichmentFilePath,
+		
+		    RawJson  = Json.Document(File.Contents(FilePath)),
+		
+		    // Extract defaults
+		    Defaults = RawJson[defaults],
+		    DefaultAssetCriticality = try Defaults[assetCriticality] otherwise "Moderate Impact",
+		    DefaultDataType         = try Defaults[dataType]         otherwise "End Point User",
+		    DefaultLocation         = try Defaults[location]         otherwise "Internal",
+		    DefaultDeviceType       = try Defaults[deviceType]       otherwise "Desktop",
+		
+		    // Extract asset list → table
+		    Assets  = RawJson[assets],
+		    AsTable = Table.FromList(Assets, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+		    Expanded = Table.ExpandRecordColumn(
+		        AsTable, "Column1",
+		        {"matchKey", "matchType", "deviceType", "assetCriticality", "dataType", "location", "notes"}
+		    ),
+		
+		    // Replace nulls with defaults
+		    WithDefaults = Table.ReplaceValue(
+		        Table.ReplaceValue(
+		            Table.ReplaceValue(
+		                Table.ReplaceValue(
+		                    Expanded,
+		                    null, DefaultDeviceType,
+		                    Replacer.ReplaceValue, {"deviceType"}
+		                ),
+		                null, DefaultAssetCriticality,
+		                Replacer.ReplaceValue, {"assetCriticality"}
+		            ),
+		            null, DefaultDataType,
+		            Replacer.ReplaceValue, {"dataType"}
+		        ),
+		        null, DefaultLocation,
+		        Replacer.ReplaceValue, {"location"}
+		    ),
+		
+		    // Fill empty notes with blank string
+		    Final = Table.ReplaceValue(WithDefaults, null, "", Replacer.ReplaceValue, {"notes"}),
+		
+		    // Record of default values so VRM_Report can reference them
+		    _Defaults = [
+		        DefaultDeviceType       = DefaultDeviceType,
+		        DefaultAssetCriticality = DefaultAssetCriticality,
+		        DefaultDataType         = DefaultDataType,
+		        DefaultLocation         = DefaultLocation
+		    ]
+		in
+		    Final
+	lineageTag: 5c22d847-90ff-428d-957b-0ee948ccfed9
+
+expression EnrichmentDefaults =
+		// ============================================================================
+		// EnrichmentDefaults  –  Expose defaults from enrichment JSON
+		// ============================================================================
+		// Reads the same JSON file as Enrichment and returns a single record
+		// containing the default values.  Referenced by VRM_Report when no
+		// enrichment match is found.
+		// ============================================================================
+		
+		let
+		    FilePath = EnrichmentFilePath,
+		    RawJson  = Json.Document(File.Contents(FilePath)),
+		    Defaults = RawJson[defaults],
+		
+		    Result = [
+		        DeviceType       = try Defaults[deviceType]       otherwise "Desktop",
+		        AssetCriticality = try Defaults[assetCriticality] otherwise "Moderate Impact",
+		        DataType         = try Defaults[dataType]         otherwise "End Point User",
+		        Location         = try Defaults[location]         otherwise "Internal"
+		    ]
+		in
+		    Result
+	lineageTag: 7801efa3-72a4-4941-928e-9b14c80e6c48
+
