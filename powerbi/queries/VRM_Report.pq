@@ -189,14 +189,18 @@ let
         [productName] ?? "",
         type text),
 
+    // --- Column P: Machine Name (hostname from Defender) ---
+    AddMachineName = Table.AddColumn(AddProduct, "P_MachineName", each
+        [m.computerDnsName] ?? "", type text),
+
     // ── 6.  Select only the final report columns ───────────────────────
-    FinalColumns = Table.SelectColumns(AddProduct, {
+    FinalColumns = Table.SelectColumns(AddMachineName, {
         "A_UniqueId", "B_Criticality", "C_CveId", "C_CvssScore",
         "D_Description", "E_DeviceOS", "F_DeviceType",
         "G_DateFirstDetected", "H_DateLastDetected",
         "I_Status", "J_RiskAcceptance",
         "K_AssetCriticality", "L_DataType", "M_Location",
-        "N_Notes", "O_Product"
+        "N_Notes", "O_Product", "P_MachineName"
     }),
 
     // Friendly column names for the report
@@ -216,7 +220,8 @@ let
         {"L_DataType",          "Data Type"},
         {"M_Location",          "Location"},
         {"N_Notes",             "Notes"},
-        {"O_Product",           "Product"}
+        {"O_Product",           "Product"},
+        {"P_MachineName",       "Machine Name"}
     })
 in
     Renamed

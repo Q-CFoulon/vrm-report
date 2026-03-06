@@ -109,14 +109,17 @@ let
         [#"Related Software"] ?? "",
         type text),
 
+    // --- Column P: Machine Name (not available in CSV export; left blank) ---
+    AddMachineName = Table.AddColumn(AddProduct, "P_MachineName", each "", type text),
+
     // ── 3.  Select only the final report columns ───────────────────────
-    FinalColumns = Table.SelectColumns(AddProduct, {
+    FinalColumns = Table.SelectColumns(AddMachineName, {
         "A_UniqueId", "B_Criticality", "C_CveId", "C_CvssScore",
         "D_Description", "E_DeviceOS", "F_DeviceType",
         "G_DateFirstDetected", "H_DateLastDetected",
         "I_Status", "J_RiskAcceptance",
         "K_AssetCriticality", "L_DataType", "M_Location",
-        "N_Notes", "O_Product"
+        "N_Notes", "O_Product", "P_MachineName"
     }),
 
     Renamed = Table.RenameColumns(FinalColumns, {
@@ -135,7 +138,8 @@ let
         {"L_DataType",          "Data Type"},
         {"M_Location",          "Location"},
         {"N_Notes",             "Notes"},
-        {"O_Product",           "Product"}
+        {"O_Product",           "Product"},
+        {"P_MachineName",       "Machine Name"}
     })
 in
     Renamed

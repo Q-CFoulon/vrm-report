@@ -168,6 +168,7 @@ $columns = @(
     New-Column "Location"
     New-Column "Notes"
     New-Column "Product"
+    New-Column "Machine Name"
 )
 
 # ---------------------------------------------------------------------------
@@ -180,6 +181,7 @@ function New-Measure([string]$name, [string]$expression) {
 $measures = @(
     New-Measure "Total Vulnerabilities" "COUNTROWS('VRM_Report')"
     New-Measure "Unique CVEs"           "DISTINCTCOUNT('VRM_Report'[CVE#])"
+    New-Measure "Unique Machines"       "DISTINCTCOUNT('VRM_Report'[Machine Name])"
 
     New-Measure "Critical Count"    "CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = ""Critical"")"
     New-Measure "High Count"        "CALCULATE(COUNTROWS('VRM_Report'), 'VRM_Report'[Criticality] = ""High"")"
