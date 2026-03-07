@@ -1,9 +1,11 @@
 /**
  * Authentication service for Microsoft Defender for Endpoint APIs.
  *
- * Supports four flows:
- *   - **azure_cli** — default. Uses your existing `az login` session.
- *     No app registration needed. Just run `az login` once.
+ * Supports five flows:
+ *   - **vscode** — default. Uses your existing VS Code Azure sign-in.
+ *     No CLI or app registration needed. Just sign in to Azure in VS Code.
+ *   - **azure_cli** — Uses your existing `az login` session.
+ *     No app registration needed. Requires Azure CLI to be installed.
  *   - **browser** — pops open a browser window for interactive sign-in.
  *     Requires app registration with http://localhost redirect URI.
  *   - **interactive** — device-code flow (sign in at aka.ms/devicelogin).
@@ -16,6 +18,7 @@ import {
   DeviceCodeCredential,
   InteractiveBrowserCredential,
   AzureCliCredential,
+  VisualStudioCodeCredential,
 } from '@azure/identity';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import type { AppConfig } from '../config/settings';
@@ -44,10 +47,39 @@ export class AuthService {
     }
 
     switch (this.config.authMode) {
+      case 'vscode':            return this.acquireViaVsCode();
       case 'azure_cli':         return this.acquireViaAzureCli();
       case 'browser':           return this.acquireViaBrowser();
       case 'client_credential': return this.acquireViaClientCredential();
       default:                  return this.acquireViaDeviceCode();
+    }
+  }
+
+  // -- VS Code Azure account flow (no app registration or CLI needed) ------
+
+  private async acquireViaVsCode(): Promise<string> {
+    const logger = getLogger();
+    logger.info('Acquiring token via VS Code Azure sign-in...');
+
+    const cred = new VisualStudioCodeCredential({
+      tenantId: this.config.azure.tenantId,
+    });
+
+    try {
+      const token = await cred.getToken(this.config.defender.delegatedScope);
+      this.cachedToken = token.token;
+      this.tokenExpiry = token.expiresOnTimestamp;
+      logger.info('Access token acquired successfully.');
+      return this.cachedToken;
+    } catch (err: any) {
+      logger.error(`VS Code auth failed: ${err.message}`);
+      logger.error(
+        'Make sure you are signed in to Azure in VS Code:\n' +
+        '  1. Open the Command Palette (Ctrl+Shift+P)\n' +
+        '  2. Run: Azure: Sign In\n' +
+        '  3. Then retry this command.',
+      );
+      throw err;
     }
   }
 

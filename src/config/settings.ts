@@ -3,7 +3,7 @@ import * as path from 'path';
 
 dotenv.config();
 
-export type AuthMode = 'interactive' | 'browser' | 'azure_cli' | 'client_credential';
+export type AuthMode = 'vscode' | 'interactive' | 'browser' | 'azure_cli' | 'client_credential';
 
 export interface AppConfig {
   authMode: AuthMode;
@@ -37,7 +37,7 @@ export function loadConfig(): AppConfig {
     process.env.DEFENDER_API_BASE_URL ??
     'https://api.security.microsoft.com';
 
-  const authMode = (process.env.AUTH_MODE ?? 'azure_cli') as AuthMode;
+  const authMode = (process.env.AUTH_MODE ?? 'vscode') as AuthMode;
 
   // tenantId / clientId only required for interactive device-code, browser and client_credential flows
   const needsAppReg = authMode === 'interactive' || authMode === 'browser' || authMode === 'client_credential';
