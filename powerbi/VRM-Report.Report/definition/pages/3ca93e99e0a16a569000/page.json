@@ -1,14 +1,16 @@
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
-  "name": "3ca93e99e0a16a569000",
-  "displayName": "Executive Summary",
-  "displayOption": "FitToPage",
-  "height": 720,
-  "width": 1280,
-  "pageBinding": {
-    "name": "844310e503ad497e80a3",
-    "type": "Default",
-    "parameters": [],
-    "referenceScope": "CrossReport"
-  }
+﻿{
+    "$schema":  "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+    "name":  "3ca93e99e0a16a569000",
+    "displayName":  "Executive Summary",
+    "displayOption":  "FitToPage",
+    "height":  720,
+    "width":  1280,
+    "pageBinding":  {
+                        "name":  "ea5398363ed846d3a7ba",
+                        "type":  "Default",
+                        "parameters":  [
+
+                                       ],
+                        "referenceScope":  "CrossReport"
+                    }
 }

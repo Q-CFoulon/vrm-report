@@ -1,16 +1,22 @@
 /**
  * Authentication service for Microsoft Defender for Endpoint APIs.
  *
- * Supports two flows:
- *   - **Interactive (device-code)** — default. Uses @azure/identity
- *     DeviceCodeCredential so the user signs in via browser.
- *     Requires delegated permission `Vulnerability.Read`.
- *   - **Client-credential** — set AUTH_MODE=client_credential in .env and
- *     provide AZURE_CLIENT_SECRET. Uses MSAL ConfidentialClientApplication
- *     with application permission `Vulnerability.Read.All`.
+ * Supports four flows:
+ *   - **azure_cli** — default. Uses your existing `az login` session.
+ *     No app registration needed. Just run `az login` once.
+ *   - **browser** — pops open a browser window for interactive sign-in.
+ *     Requires app registration with http://localhost redirect URI.
+ *   - **interactive** — device-code flow (sign in at aka.ms/devicelogin).
+ *     Requires app registration with "Allow public client flows" enabled.
+ *   - **client_credential** — headless app secret flow.
+ *     Requires AZURE_CLIENT_SECRET in .env.
  */
 
-import { DeviceCodeCredential } from '@azure/identity';
+import {
+  DeviceCodeCredential,
+  InteractiveBrowserCredential,
+  AzureCliCredential,
+} from '@azure/identity';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import type { AppConfig } from '../config/settings';
 import { getLogger } from '../utils/logger';
@@ -37,14 +43,66 @@ export class AuthService {
       return this.cachedToken;
     }
 
-    if (this.config.authMode === 'client_credential') {
-      return this.acquireViaClientCredential();
+    switch (this.config.authMode) {
+      case 'azure_cli':         return this.acquireViaAzureCli();
+      case 'browser':           return this.acquireViaBrowser();
+      case 'client_credential': return this.acquireViaClientCredential();
+      default:                  return this.acquireViaDeviceCode();
     }
-
-    return this.acquireViaDeviceCode();
   }
 
-  // -- Device-code (interactive) flow via @azure/identity -------------------
+  // -- Azure CLI flow (no app registration required) ------------------------
+
+  private async acquireViaAzureCli(): Promise<string> {
+    const logger = getLogger();
+    logger.info('Acquiring token via Azure CLI (az login session)...');
+
+    const cred = new AzureCliCredential();
+    try {
+      const token = await cred.getToken(this.config.defender.delegatedScope);
+      this.cachedToken = token.token;
+      this.tokenExpiry = token.expiresOnTimestamp;
+      logger.info('Access token acquired successfully.');
+      return this.cachedToken;
+    } catch (err: any) {
+      logger.error(`Azure CLI auth failed: ${err.message}`);
+      logger.error(
+        'Make sure you are logged in: run `az login` then try again.\n' +
+        'If your account needs access to the Defender API, ensure you have\n' +
+        'the SecurityReader or equivalent role in Defender for Endpoint.',
+      );
+      throw err;
+    }
+  }
+
+  // -- Interactive browser popup flow ---------------------------------------
+
+  private async acquireViaBrowser(): Promise<string> {
+    const logger = getLogger();
+    logger.info('Opening browser for interactive sign-in...');
+
+    const cred = new InteractiveBrowserCredential({
+      tenantId: this.config.azure.tenantId,
+      clientId: this.config.azure.clientId,
+    });
+
+    try {
+      const token = await cred.getToken(this.config.defender.delegatedScope);
+      this.cachedToken = token.token;
+      this.tokenExpiry = token.expiresOnTimestamp;
+      logger.info('Access token acquired successfully.');
+      return this.cachedToken;
+    } catch (err: any) {
+      logger.error(`Browser auth failed: ${err.message}`);
+      logger.error(
+        'Ensure your app registration has:\n' +
+        '  1. Authentication > Redirect URIs includes http://localhost\n' +
+        '  2. Authentication > "Allow public client flows" = Yes\n' +
+        '  3. API permissions > WindowsDefenderATP > Delegated > Vulnerability.Read',
+      );
+      throw err;
+    }
+  }
 
   private async acquireViaDeviceCode(): Promise<string> {
     const logger = getLogger();

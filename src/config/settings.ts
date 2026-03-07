@@ -3,13 +3,13 @@ import * as path from 'path';
 
 dotenv.config();
 
-export type AuthMode = 'interactive' | 'client_credential';
+export type AuthMode = 'interactive' | 'browser' | 'azure_cli' | 'client_credential';
 
 export interface AppConfig {
   authMode: AuthMode;
   azure: {
-    tenantId: string;
-    clientId: string;
+    tenantId?: string;
+    clientId?: string;
     clientSecret?: string;
   };
   defender: {
@@ -35,15 +35,20 @@ function requireEnv(key: string): string {
 export function loadConfig(): AppConfig {
   const baseUrl =
     process.env.DEFENDER_API_BASE_URL ??
-    'https://api.securitycenter.microsoft.com';
+    'https://api.security.microsoft.com';
 
-  const authMode = (process.env.AUTH_MODE ?? 'interactive') as AuthMode;
+  const authMode = (process.env.AUTH_MODE ?? 'azure_cli') as AuthMode;
+
+  // tenantId / clientId only required for interactive device-code, browser and client_credential flows
+  const needsAppReg = authMode === 'interactive' || authMode === 'browser' || authMode === 'client_credential';
+  const tenantId = needsAppReg ? requireEnv('AZURE_TENANT_ID') : process.env.AZURE_TENANT_ID;
+  const clientId = needsAppReg ? requireEnv('AZURE_CLIENT_ID') : process.env.AZURE_CLIENT_ID;
 
   return {
     authMode,
     azure: {
-      tenantId: requireEnv('AZURE_TENANT_ID'),
-      clientId: requireEnv('AZURE_CLIENT_ID'),
+      tenantId,
+      clientId,
       clientSecret: process.env.AZURE_CLIENT_SECRET || undefined,
     },
     defender: {

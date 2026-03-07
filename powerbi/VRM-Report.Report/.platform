@@ -1,11 +1,11 @@
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
-  "metadata": {
-    "type": "Report",
-    "displayName": "VRM-Report"
-  },
-  "config": {
-    "version": "2.0",
-    "logicalId": "60c95165-26a9-4d9c-a60a-d75aa68c6dcc"
-  }
+﻿{
+    "$schema":  "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+    "metadata":  {
+                     "type":  "Report",
+                     "displayName":  "VRM-Report"
+                 },
+    "config":  {
+                   "version":  "2.0",
+                   "logicalId":  "a31b4747-d0d8-40d5-86bf-8d1deea7fb5b"
+               }
 }

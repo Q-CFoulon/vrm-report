@@ -1,14 +1,16 @@
-{
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
-  "name": "d4e5f6a7b8c9d0e1f200",
-  "displayName": "Detail Table",
-  "displayOption": "FitToPage",
-  "height": 720,
-  "width": 1280,
-  "pageBinding": {
-    "name": "7c9bd7b6404745aa869d",
-    "type": "Default",
-    "parameters": [],
-    "referenceScope": "CrossReport"
-  }
+﻿{
+    "$schema":  "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+    "name":  "d4e5f6a7b8c9d0e1f200",
+    "displayName":  "Detail Table",
+    "displayOption":  "FitToPage",
+    "height":  720,
+    "width":  1280,
+    "pageBinding":  {
+                        "name":  "1c4a1440b00344b3abee",
+                        "type":  "Default",
+                        "parameters":  [
+
+                                       ],
+                        "referenceScope":  "CrossReport"
+                    }
 }

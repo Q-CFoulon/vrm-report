@@ -1,6 +1,8 @@
 expression DefenderApiBaseUrl = "https://api.securitycenter.microsoft.com" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 0a91dc70-e4b8-453c-999a-49bf903e63b9
 
+	annotation PBI_ResultType = Text
+
 expression fn_PaginatedGet =
 		// ============================================================================
 		// fn_PaginatedGet  –  Reusable OData pagination helper
@@ -61,6 +63,8 @@ expression fn_PaginatedGet =
 
 expression EnrichmentFilePath = "C:\Users\CFoulon\OneDrive - Quisitive\Apps\vrm-report\data\enrichment\asset-enrichment.json" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: 1be169ed-56ac-4740-808f-684ba5e25e65
+
+	annotation PBI_ResultType = Text
 
 expression Vulnerabilities =
 		// ============================================================================
