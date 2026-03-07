@@ -2,10 +2,13 @@
  * VRM Report Generator – CLI entry point.
  *
  * Commands:
- *   generate   Fetch data from Defender APIs, merge enrichment, produce report.
- *   validate   Test API connectivity and permissions (no report generated).
+ *   generate    Fetch data from Defender APIs, merge enrichment, produce report.
+ *   from-json   Re-export a previously saved JSON report to Excel and/or CSV (no API calls).
+ *   validate    Test API connectivity and permissions (no report generated).
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
 import { Command } from 'commander';
 import { loadConfig } from './config/settings';
 import { getLogger } from './utils/logger';
@@ -19,7 +22,7 @@ import {
   generateJsonReport,
   computeSummary,
 } from './services/report.service';
-import type { MachineReference } from './types';
+import type { MachineReference, VrmReportRow } from './types';
 
 const program = new Command();
 
@@ -144,6 +147,61 @@ program
       if (err.response?.data) {
         logger.error(`API response: ${JSON.stringify(err.response.data)}`);
       }
+      process.exit(1);
+    }
+  });
+
+// ---------------------------------------------------------------------------
+// from-json command
+// ---------------------------------------------------------------------------
+program
+  .command('from-json')
+  .description('Re-export a previously saved JSON report to Excel and/or CSV without API calls.')
+  .requiredOption('--input <file>', 'Path to a VRM-Report-*.json file produced by generate --json.')
+  .option('--csv', 'Also produce a CSV export.')
+  .option('--no-excel', 'Skip the Excel output (use with --csv to get CSV only).')
+  .option('--output <dir>', 'Override output directory.')
+  .action(async (opts) => {
+    const config = loadConfig();
+    const logger = getLogger(config.logLevel);
+
+    try {
+      const inputPath = path.resolve(opts.input);
+      if (!fs.existsSync(inputPath)) {
+        logger.error(`Input file not found: ${inputPath}`);
+        process.exit(1);
+      }
+
+      logger.info(`=== VRM Re-export from JSON ===`);
+      logger.info(`Reading: ${inputPath}`);
+
+      const raw = JSON.parse(fs.readFileSync(inputPath, 'utf-8')) as {
+        generatedAt: string;
+        rows: VrmReportRow[];
+      };
+
+      if (!Array.isArray(raw.rows) || raw.rows.length === 0) {
+        logger.error('JSON file contains no rows — is this a valid VRM-Report JSON?');
+        process.exit(1);
+      }
+
+      logger.info(`Loaded ${raw.rows.length} rows (originally generated ${raw.generatedAt}).`);
+
+      const outputDir = opts.output ?? config.outputDir;
+
+      if (opts.excel !== false) {
+        const excelPath = await generateExcelReport(raw.rows, outputDir);
+        logger.info(`Excel report: ${excelPath}`);
+      }
+
+      if (opts.csv) {
+        const csvPath = generateCsvReport(raw.rows, outputDir);
+        logger.info(`CSV report:   ${csvPath}`);
+      }
+
+      logger.info('=== Done ===');
+    } catch (err: any) {
+      logger.error(`Re-export failed: ${err.message}`);
       process.exit(1);
     }
   });

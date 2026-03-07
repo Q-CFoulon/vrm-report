@@ -11,6 +11,7 @@
     "generate:csv": "ts-node src/index.ts generate --csv",
     "generate:json": "ts-node src/index.ts generate --json",
     "generate:all": "ts-node src/index.ts generate --csv --json",
+    "from-json": "ts-node src/index.ts from-json",
     "validate": "ts-node src/index.ts validate",
     "lint": "eslint src/**/*.ts",
     "clean": "rimraf dist"

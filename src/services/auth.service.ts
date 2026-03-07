@@ -57,8 +57,13 @@ export class AuthService {
         tenantId: this.config.azure.tenantId,
         clientId: this.config.azure.clientId,
         userPromptCallback: (info) => {
+          const url  = info.verificationUri ?? (info as any).verification_uri ?? 'https://microsoft.com/devicelogin';
+          const code = info.userCode ?? (info as any).user_code ?? '(see above)';
+          const msg  = info.message ?? `To sign in, open ${url} and enter the code: ${code}`;
           console.log('\n========================================');
-          console.log(info.message);
+          console.log(msg);
+          console.log(`  URL:  ${url}`);
+          console.log(`  Code: ${code}`);
           console.log('========================================\n');
         },
       });
