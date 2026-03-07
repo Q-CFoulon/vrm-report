@@ -1,16 +1,16 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
-  "name": "0e5d4c9910e01a0eeb9d",
+  "name": "41a3b689d59317041817",
   "position": {
-    "x": 10.40650406504065,
-    "y": 236.51145602365114,
-    "z": 3000,
-    "height": 465.45454545454544,
-    "width": 1269.5934959349593,
-    "tabOrder": 3000
+    "x": 0,
+    "y": 164.66122178968527,
+    "z": 2,
+    "height": 219.54829571958035,
+    "width": 917.79524887837238,
+    "tabOrder": 2
   },
   "visual": {
-    "visualType": "clusteredBarChart",
+    "visualType": "barChart",
     "query": {
       "queryState": {
         "Category": {
@@ -32,70 +32,6 @@
             }
           ]
         },
-        "Series": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "VRM_Report"
-                    }
-                  },
-                  "Property": "Device OS"
-                }
-              },
-              "queryRef": "VRM_Report.Device OS",
-              "nativeQueryRef": "Device OS"
-            }
-          ]
-        },
-        "Tooltips": {
-          "projections": [
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "VRM_Report"
-                    }
-                  },
-                  "Property": "Pending Over 2 Months"
-                }
-              },
-              "queryRef": "VRM_Report.Pending Over 2 Months",
-              "nativeQueryRef": "Pending Over 2 Months"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "VRM_Report"
-                    }
-                  },
-                  "Property": "Pending Over 3 Months"
-                }
-              },
-              "queryRef": "VRM_Report.Pending Over 3 Months",
-              "nativeQueryRef": "Pending Over 3 Months"
-            },
-            {
-              "field": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "VRM_Report"
-                    }
-                  },
-                  "Property": "Pending Under 1 Month"
-                }
-              },
-              "queryRef": "VRM_Report.Pending Under 1 Month",
-              "nativeQueryRef": "Pending Under 1 Month"
-            }
-          ]
-        },
         "Y": {
           "projections": [
             {
@@ -106,11 +42,39 @@
                       "Entity": "VRM_Report"
                     }
                   },
-                  "Property": "Pending Over 1 Month"
+                  "Property": "High Count"
                 }
               },
-              "queryRef": "VRM_Report.Pending Over 1 Month",
-              "nativeQueryRef": "Pending Over 1 Month"
+              "queryRef": "VRM_Report.High Count",
+              "nativeQueryRef": "High Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Low Count"
+                }
+              },
+              "queryRef": "VRM_Report.Low Count",
+              "nativeQueryRef": "Low Count"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Medium Count"
+                }
+              },
+              "queryRef": "VRM_Report.Medium Count",
+              "nativeQueryRef": "Medium Count"
             }
           ]
         }
@@ -125,7 +89,7 @@
                     "Entity": "VRM_Report"
                   }
                 },
-                "Property": "Pending Over 1 Month"
+                "Property": "High Count"
               }
             },
             "direction": "Descending"
@@ -135,5 +99,65 @@
       }
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "287ff12f5b464dda85d0",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Status"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "a9aef790a8861ce6d1c0",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "High Count"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "cfebff4d0c7e04396d07",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Low Count"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "0fdb5db40b9373008966",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Medium Count"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

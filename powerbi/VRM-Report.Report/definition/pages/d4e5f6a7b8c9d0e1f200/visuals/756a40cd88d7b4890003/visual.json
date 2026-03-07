@@ -1,0 +1,452 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.6.0/schema.json",
+  "name": "756a40cd88d7b4890003",
+  "position": {
+    "x": 9.7268232280826741,
+    "y": 0,
+    "z": 0,
+    "height": 719.78491887811788,
+    "width": 1270.0452043525092,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Unique ID"
+                }
+              },
+              "queryRef": "VRM_Report.Unique ID",
+              "nativeQueryRef": "Unique ID"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Machine Name"
+                }
+              },
+              "queryRef": "VRM_Report.Machine Name",
+              "nativeQueryRef": "Machine Name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "CVE#"
+                }
+              },
+              "queryRef": "VRM_Report.CVE#",
+              "nativeQueryRef": "CVE#"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Device OS"
+                }
+              },
+              "queryRef": "VRM_Report.Device OS",
+              "nativeQueryRef": "Device OS"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Device Type"
+                }
+              },
+              "queryRef": "VRM_Report.Device Type",
+              "nativeQueryRef": "Device Type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Date First Detected"
+                }
+              },
+              "queryRef": "VRM_Report.Date First Detected",
+              "nativeQueryRef": "Date First Detected"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Date Last Detected"
+                }
+              },
+              "queryRef": "VRM_Report.Date Last Detected",
+              "nativeQueryRef": "Date Last Detected"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Status"
+                }
+              },
+              "queryRef": "VRM_Report.Status",
+              "nativeQueryRef": "Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Data Type"
+                }
+              },
+              "queryRef": "VRM_Report.Data Type",
+              "nativeQueryRef": "Data Type"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Location"
+                }
+              },
+              "queryRef": "VRM_Report.Location",
+              "nativeQueryRef": "Location"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Notes"
+                }
+              },
+              "queryRef": "VRM_Report.Notes",
+              "nativeQueryRef": "Notes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "VRM_Report"
+                    }
+                  },
+                  "Property": "Description"
+                }
+              },
+              "queryRef": "VRM_Report.Description",
+              "nativeQueryRef": "Description"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "378.63206297871346D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "VRM_Report.Description"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "38.82188774813931D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "VRM_Report.Unique ID"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "84.46844657995608D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "VRM_Report.Status"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "116.82189381865686D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "VRM_Report.Date Last Detected"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "120.04601222720126D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "VRM_Report.Date First Detected"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "119.03450848727552D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "VRM_Report.Machine Name"
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "30baf15d6a2e0b7d58d6",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Unique ID"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "ce802bee56443aba0356",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Machine Name"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "51f4f05a0c6a25ca8965",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "CVE#"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "349c0c7538ce657c9b99",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Device OS"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "71902cf9b9b7cded8dc5",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Device Type"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "a15de41370b90aa2258d",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Date First Detected"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "54fc89f664cc09925c90",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Date Last Detected"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "b2561dceac5515cca411",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Status"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "a2a9ee752e653e8c0506",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Data Type"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "7a2f5d952e979e078383",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Location"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "d182de337ccd3827b59e",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Notes"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "bf4496c110e20c549e79",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "VRM_Report"
+              }
+            },
+            "Property": "Description"
+          }
+        },
+        "type": "Categorical"
+      }
+    ]
+  }
+}

@@ -6,16 +6,9 @@
   "height": 720,
   "width": 1280,
   "pageBinding": {
-    "name": "218b8c1c1cd9407f87af",
+    "name": "844310e503ad497e80a3",
     "type": "Default",
     "parameters": [],
     "referenceScope": "CrossReport"
-  },
-  "visualInteractions": [
-    {
-      "source": "a35dddf4a4bc445ead6b",
-      "target": "af1324fbd3b98c8051b9",
-      "type": "HighlightFilter"
-    }
-  ]
+  }
 }
