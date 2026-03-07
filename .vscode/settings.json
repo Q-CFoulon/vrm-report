@@ -1,0 +1,7 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "winget": true,
+        "az": true,
+        "Start-Process": true
+    }
+}
