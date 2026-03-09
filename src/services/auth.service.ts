@@ -183,12 +183,6 @@ export class AuthService {
     const logger = getLogger();
     logger.info('Acquiring token via client-credential flow...');
 
-    if (!this.config.azure.clientId || !this.config.azure.tenantId) {
-      throw new Error(
-        'AUTH_MODE is client_credential but AZURE_CLIENT_ID or AZURE_TENANT_ID is not set.',
-      );
-    }
-
     if (!this.config.azure.clientSecret) {
       throw new Error(
         'AUTH_MODE is client_credential but AZURE_CLIENT_SECRET is not set.',
