@@ -1,4 +1,4 @@
-import * as dotenv from 'dotenv';
+﻿import * as dotenv from 'dotenv';
 import * as path from 'path';
 
 dotenv.config();
@@ -39,9 +39,17 @@ export function loadConfig(): AppConfig {
 
   const authMode = (process.env.AUTH_MODE ?? 'vscode') as AuthMode;
 
-  // tenantId / clientId only required for interactive device-code, browser and client_credential flows
+  // AZURE_TENANT_ID is required for all auth modes:
+  //   - interactive / browser / client_credential: determines which Entra tenant
+  //     the app registration belongs to.
+  //   - vscode / azure_cli: passed to VisualStudioCodeCredential /
+  //     AzureCliCredential so they pick the right tenant when the user is
+  //     signed into multiple tenants simultaneously (avoids silent wrong-tenant
+  //     token acquisition).
+  const tenantId = requireEnv('AZURE_TENANT_ID');
+
+  // clientId only required for flows that need an app registration
   const needsAppReg = authMode === 'interactive' || authMode === 'browser' || authMode === 'client_credential';
-  const tenantId = needsAppReg ? requireEnv('AZURE_TENANT_ID') : process.env.AZURE_TENANT_ID;
   const clientId = needsAppReg ? requireEnv('AZURE_CLIENT_ID') : process.env.AZURE_CLIENT_ID;
 
   return {
