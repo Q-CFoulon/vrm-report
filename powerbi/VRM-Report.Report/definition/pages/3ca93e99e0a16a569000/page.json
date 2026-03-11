@@ -1,4 +1,4 @@
-﻿{
+{
     "$schema":  "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
     "name":  "3ca93e99e0a16a569000",
     "displayName":  "Executive Summary",
@@ -6,7 +6,7 @@
     "height":  720,
     "width":  1280,
     "pageBinding":  {
-                        "name":  "528c873bd5bb48e5a3e4",
+                        "name":  "146d09eeeb7a487ea239",
                         "type":  "Default",
                         "parameters":  [
 
