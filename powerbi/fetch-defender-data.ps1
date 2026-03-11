@@ -56,23 +56,23 @@
 .EXAMPLE
     # Azure CLI — most common, no app registration needed
     az login --tenant contoso.onmicrosoft.com
-    .\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
+    ./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
 
     # Azure PowerShell — no app registration needed
     Connect-AzAccount -TenantId "contoso.onmicrosoft.com"
-    .\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" -AuthMode azure_powershell
+    ./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" -AuthMode azure_powershell
 
     # Device-code interactive sign-in (requires app registration)
-    .\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" `
+    ./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" `
         -ClientId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -AuthMode device_code
 
     # Headless client-credential (requires app registration + secret)
-    .\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" `
+    ./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" `
         -ClientId "xxxxxxxx-..." -ClientSecret "..." -AuthMode client_credential
 
     # After fetching, build the Power BI report from the downloaded data
-    .\setup.ps1 -DataSource preloaded -TenantId "contoso" `
-        -CsvFolderPath ".\csv\contoso.onmicrosoft.com" -Open
+    ./setup.ps1 -DataSource preloaded -TenantId "contoso" `
+        -CsvFolderPath "./csv/contoso.onmicrosoft.com" -Open
 #>
 [CmdletBinding()]
 param(
@@ -108,7 +108,7 @@ function Export-CsvNoBOM {
 # Resolve and prepare output folder
 # ---------------------------------------------------------------------------
 if (-not $OutputFolder) {
-    $OutputFolder = Join-Path $scriptDir "csv\$TenantId"
+    $OutputFolder = Join-Path $scriptDir "csv" $TenantId
 }
 if (-not (Test-Path $OutputFolder)) {
     New-Item -Path $OutputFolder -ItemType Directory -Force | Out-Null
@@ -384,7 +384,7 @@ Write-Host "  machineVulnerabilities.csv   — $($mv.Count) device×CVE rows"
 Write-Host ""
 Write-Host "Next: generate the Power BI report from these files:" -ForegroundColor Cyan
 $tenantShort = $TenantId -replace '\..*$', ''   # first label before the first dot
-Write-Host "  .\setup.ps1 -DataSource preloaded -TenantId `"$tenantShort`" ``" -ForegroundColor White
+Write-Host "  ./setup.ps1 -DataSource preloaded -TenantId `"$tenantShort`" ``" -ForegroundColor White
 Write-Host "             -CsvFolderPath `"$OutputFolder`" -Open" -ForegroundColor White
 Write-Host ""
 Write-Host "To refresh data in the future: re-run this script, then click Refresh in Power BI." -ForegroundColor Gray

@@ -35,10 +35,10 @@
     If specified, opens the generated .pbip file in Power BI Desktop.
 
 .EXAMPLE
-    .\setup.ps1 -Open
-    .\setup.ps1 -TenantId "contoso" -Open
-    .\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports" -TenantId "fabrikam" -Open
-    .\setup.ps1 -EnrichmentPath "C:\data\enrichment.json" -TenantId "contoso" -Open
+    ./setup.ps1 -Open
+    ./setup.ps1 -TenantId "contoso" -Open
+    ./setup.ps1 -DataSource csv -CsvFolderPath "/tmp/exports" -TenantId "fabrikam" -Open
+    ./setup.ps1 -EnrichmentPath "/data/enrichment.json" -TenantId "contoso" -Open
 #>
 [CmdletBinding()]
 param(
@@ -64,7 +64,7 @@ $projectName = if ($TenantId) { "VRM-Report-$TenantId" } else { "VRM-Report" }
 # Resolve the enrichment file path
 # ---------------------------------------------------------------------------
 if (-not $EnrichmentPath) {
-    $defaultPath = Join-Path (Split-Path $scriptDir) "data\enrichment\asset-enrichment.json"
+    $defaultPath = Join-Path (Split-Path $scriptDir) "data" "enrichment" "asset-enrichment.json"
     if (Test-Path $defaultPath) {
         $EnrichmentPath = (Resolve-Path $defaultPath).Path
     } else {
@@ -113,7 +113,7 @@ Write-Host "Reading Power Query scripts..." -ForegroundColor Yellow
 $mQueries = @{}
 
 # Always load common queries (Enrichment, EnrichmentDefaults, VRM_Report)
-Get-ChildItem "$queriesDir\*.pq" | ForEach-Object {
+Get-ChildItem (Join-Path $queriesDir "*.pq") | ForEach-Object {
     $mQueries[$_.BaseName] = (Get-Content $_.FullName -Raw).TrimEnd()
     Write-Host "  + $($_.BaseName)" -ForegroundColor Gray
 }
@@ -121,7 +121,7 @@ Get-ChildItem "$queriesDir\*.pq" | ForEach-Object {
 # In CSV mode, override the three data queries with their CSV variants
 if ($DataSource -eq 'csv') {
     $csvDir = Join-Path $queriesDir "csv"
-    foreach ($csvFile in (Get-ChildItem "$csvDir\*.pq")) {
+    foreach ($csvFile in (Get-ChildItem (Join-Path $csvDir "*.pq"))) {
         # Strip _CSV suffix → e.g. Vulnerabilities_CSV → Vulnerabilities
         $baseName = $csvFile.BaseName -replace '_CSV$', ''
         $mQueries[$baseName] = (Get-Content $csvFile.FullName -Raw).TrimEnd()
@@ -134,7 +134,7 @@ if ($DataSource -eq 'csv') {
 # VRM_Report.pq is NOT overridden — it runs unchanged for full per-device rows.
 if ($DataSource -eq 'preloaded') {
     $preloadedDir = Join-Path $queriesDir "preloaded"
-    foreach ($preFile in (Get-ChildItem "$preloadedDir\*.pq")) {
+    foreach ($preFile in (Get-ChildItem (Join-Path $preloadedDir "*.pq"))) {
         $baseName = $preFile.BaseName -replace '_preloaded$', ''
         $mQueries[$baseName] = (Get-Content $preFile.FullName -Raw).TrimEnd()
         Write-Host "  ~ $baseName (preloaded: $($preFile.Name))" -ForegroundColor DarkCyan
@@ -383,7 +383,7 @@ $modelPath = Join-Path $semanticDir "model.bim"
 Write-Host "  + $projectName.SemanticModel/model.bim" -ForegroundColor Gray
 
 # 2. definition.pbism
-$datasetPath = Join-Path $scriptDir "$projectName.SemanticModel\definition.pbism"
+$datasetPath = Join-Path $scriptDir "$projectName.SemanticModel" "definition.pbism"
 $datasetJson = [ordered]@{
     version  = "1.0"
     settings = [ordered]@{}
@@ -439,9 +439,9 @@ New-Item -Path $pagesDir -ItemType Directory -Force | Out-Null
 Write-Host "  + definition/version.json" -ForegroundColor Gray
 
 # ── StaticResources/SharedResources/BaseThemes/CY26SU02.json ──
-$themeDir = Join-Path $reportDir "StaticResources\SharedResources\BaseThemes"
+$themeDir = Join-Path $reportDir "StaticResources" "SharedResources" "BaseThemes"
 New-Item -Path $themeDir -ItemType Directory -Force | Out-Null
-$themeRef = Join-Path $scriptDir "data\references\CY26SU02.json"
+$themeRef = Join-Path $scriptDir "data" "references" "CY26SU02.json"
 if (Test-Path $themeRef) {
     Copy-Item $themeRef (Join-Path $themeDir "CY26SU02.json") -Force
 } else {
@@ -571,8 +571,8 @@ if ($TenantId) {
     Write-Host "Tenant       : $TenantId" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Switching clients later?" -ForegroundColor Cyan
-    Write-Host "  Re-run:  .\fetch-defender-data.ps1 -TenantId <new-tenant>" -ForegroundColor White
-    Write-Host "  Then:    .\setup.ps1 -DataSource preloaded -TenantId <new-tenant> -CsvFolderPath <folder> -Open" -ForegroundColor White
+    Write-Host "  Re-run:  ./fetch-defender-data.ps1 -TenantId <new-tenant>" -ForegroundColor White
+    Write-Host "  Then:    ./setup.ps1 -DataSource preloaded -TenantId <new-tenant> -CsvFolderPath <folder> -Open" -ForegroundColor White
     if ($DataSource -eq 'api') {
         Write-Host "  Or for API mode: clear credentials in Power BI first" -ForegroundColor Gray
         Write-Host "    File > Options > Data Source Settings > Clear Permissions" -ForegroundColor Gray
@@ -597,7 +597,7 @@ if ($DataSource -eq 'csv') {
     Write-Host "  CSV folder: $CsvFolderPath" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  To update data for this client:" -ForegroundColor Cyan
-    Write-Host "    .\fetch-defender-data.ps1 -TenantId `"$TenantId`"" -ForegroundColor White
+    Write-Host "    ./fetch-defender-data.ps1 -TenantId `"$TenantId`"" -ForegroundColor White
     Write-Host "    Then click Refresh in Power BI." -ForegroundColor White
 } else {
     Write-Host "  2. When prompted, sign in with your Organizational Account"

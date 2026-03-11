@@ -40,14 +40,14 @@ Run `fetch-defender-data.ps1` from the `powerbi/` folder.
 
 ```powershell
 az login --tenant contoso.onmicrosoft.com
-.\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
+./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
 ```
 
 Or Azure PowerShell if you prefer that:
 
 ```powershell
 Connect-AzAccount -TenantId "contoso.onmicrosoft.com"
-.\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" -AuthMode azure_powershell
+./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" -AuthMode azure_powershell
 ```
 
 The script downloads and saves three CSV files to `powerbi/csv/contoso.onmicrosoft.com/`:
@@ -64,8 +64,8 @@ The script downloads and saves three CSV files to `powerbi/csv/contoso.onmicroso
 ### Step 2: Generate and open the Power BI project
 
 ```powershell
-.\setup.ps1 -DataSource preloaded -TenantId "contoso" `
-            -CsvFolderPath ".\csv\contoso.onmicrosoft.com" -Open
+./setup.ps1 -DataSource preloaded -TenantId "contoso" `
+            -CsvFolderPath "./csv/contoso.onmicrosoft.com" -Open
 ```
 
 ### Step 3: Refresh in Power BI
@@ -81,7 +81,7 @@ Re-run `fetch-defender-data.ps1` with the same `-TenantId`, then click
 
 ```powershell
 az login --tenant contoso.onmicrosoft.com   # only needed if session expired
-.\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
+./fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
 ```
 
 ---
@@ -119,13 +119,13 @@ my-exports/
 
 ```powershell
 cd powerbi
-.\setup.ps1 -DataSource csv -Open
+./setup.ps1 -DataSource csv -Open
 ```
 
 Or with a custom CSV folder and client label:
 
 ```powershell
-.\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\defender" -TenantId "contoso" -Open
+./setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\defender" -TenantId "contoso" -Open
 ```
 
 ### Step 4: Refresh in Power BI
@@ -146,13 +146,13 @@ folder, and click **Refresh** in Power BI.
 Open PowerShell in the `powerbi/` folder and run:
 
 ```powershell
-.\setup.ps1 -Open
+./setup.ps1 -Open
 ```
 
 With a client label (recommended — names the output file per tenant):
 
 ```powershell
-.\setup.ps1 -TenantId "contoso" -Open
+./setup.ps1 -TenantId "contoso" -Open
 ```
 
 This will:
@@ -171,10 +171,10 @@ When Power BI opens:
 
 ```powershell
 # Custom enrichment file path
-.\setup.ps1 -EnrichmentPath "C:\data\my-enrichment.json" -TenantId "contoso" -Open
+./setup.ps1 -EnrichmentPath "C:\data\my-enrichment.json" -TenantId "contoso" -Open
 
 # Custom Defender API base URL (e.g. for GCC tenants)
-.\setup.ps1 -DefenderBaseUrl "https://api-gcc.securitycenter.microsoft.us" -Open
+./setup.ps1 -DefenderBaseUrl "https://api-gcc.securitycenter.microsoft.us" -Open
 ```
 
 You can also change these later inside Power BI: **Transform Data** → **Manage Parameters**.
@@ -304,10 +304,10 @@ cache entry in Power BI Desktop:
 
 ```powershell
 # API mode
-.\setup.ps1 -TenantId "contoso" -Open
+./setup.ps1 -TenantId "contoso" -Open
 
 # CSV mode
-.\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\contoso" `
+./setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\contoso" `
             -TenantId "contoso" -Open
 ```
 
