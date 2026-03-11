@@ -186,8 +186,8 @@ function Get-TokenDeviceCode {
         device_code = $dcResp.device_code
         client_id   = $AppClientId
     }
-    $interval = [int]($dcResp.interval ?? 5)
-    $deadline = (Get-Date).AddSeconds([int]($dcResp.expires_in ?? 900))
+    $interval = if ($null -ne $dcResp.interval) { [int]$dcResp.interval } else { 5 }
+    $deadline = (Get-Date).AddSeconds($(if ($null -ne $dcResp.expires_in) { [int]$dcResp.expires_in } else { 900 }))
     $spinner  = @('|', '/', '-', '\')
     $i = 0
 
