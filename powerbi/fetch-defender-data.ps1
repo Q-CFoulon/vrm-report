@@ -93,6 +93,17 @@ param(
 $ErrorActionPreference = 'Stop'
 $scriptDir = $PSScriptRoot
 
+# PS5's Export-Csv -Encoding UTF8 writes a BOM; use this helper instead.
+function Export-CsvNoBOM {
+    param([string]$Path)
+    begin   { $lines = [Collections.Generic.List[string]]::new() }
+    process { $lines.Add($_) }
+    end {
+        $enc = New-Object System.Text.UTF8Encoding $false
+        [IO.File]::WriteAllLines($Path, $lines.ToArray(), $enc)
+    }
+}
+
 # ---------------------------------------------------------------------------
 # Resolve and prepare output folder
 # ---------------------------------------------------------------------------
@@ -296,7 +307,7 @@ $machines | ForEach-Object {
         exposureLevel   = Format-CsvValue $_.exposureLevel
         deviceValue     = Format-CsvValue $_.deviceValue
     }
-} | Export-Csv -Path (Join-Path $OutputFolder "machines.csv") -NoTypeInformation -Encoding UTF8
+} | ConvertTo-Csv -NoTypeInformation | Export-CsvNoBOM (Join-Path $OutputFolder "machines.csv")
 Write-Host "  Saved: machines.csv" -ForegroundColor Green
 Write-Host ""
 
@@ -331,7 +342,7 @@ $vulnerabilities | ForEach-Object {
         epss              = Format-CsvValue $_.epss
         status            = Format-CsvValue $_.status
     }
-} | Export-Csv -Path (Join-Path $OutputFolder "vulnerabilities.csv") -NoTypeInformation -Encoding UTF8
+} | ConvertTo-Csv -NoTypeInformation | Export-CsvNoBOM (Join-Path $OutputFolder "vulnerabilities.csv")
 Write-Host "  Saved: vulnerabilities.csv" -ForegroundColor Green
 Write-Host ""
 
@@ -356,7 +367,7 @@ $mv | ForEach-Object {
         productVersion = Format-CsvValue $_.productVersion
         severity       = Format-CsvValue $_.severity
     }
-} | Export-Csv -Path (Join-Path $OutputFolder "machineVulnerabilities.csv") -NoTypeInformation -Encoding UTF8
+} | ConvertTo-Csv -NoTypeInformation | Export-CsvNoBOM (Join-Path $OutputFolder "machineVulnerabilities.csv")
 Write-Host "  Saved: machineVulnerabilities.csv" -ForegroundColor Green
 Write-Host ""
 

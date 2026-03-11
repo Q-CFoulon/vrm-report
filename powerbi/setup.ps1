@@ -55,6 +55,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$utf8NoBOM   = New-Object System.Text.UTF8Encoding $false   # PS5 Out-File -Encoding utf8 adds BOM; use WriteAllText instead
 $scriptDir   = $PSScriptRoot
 $queriesDir  = Join-Path $scriptDir "queries"
 $projectName = if ($TenantId) { "VRM-Report-$TenantId" } else { "VRM-Report" }
@@ -378,7 +379,7 @@ New-Item -Path $reportDir   -ItemType Directory -Force | Out-Null
 
 # 1. model.bim  (directly in SemanticModel folder, not in definition subfolder)
 $modelPath = Join-Path $semanticDir "model.bim"
-$modelJson | Out-File -FilePath $modelPath -Encoding utf8 -Force
+[IO.File]::WriteAllText($modelPath, $modelJson, $utf8NoBOM)
 Write-Host "  + $projectName.SemanticModel/model.bim" -ForegroundColor Gray
 
 # 2. definition.pbism
@@ -387,7 +388,7 @@ $datasetJson = [ordered]@{
     version  = "1.0"
     settings = [ordered]@{}
 } | ConvertTo-Json -Depth 5
-$datasetJson | Out-File -FilePath $datasetPath -Encoding utf8 -Force
+[IO.File]::WriteAllText($datasetPath, $datasetJson, $utf8NoBOM)
 Write-Host "  + $projectName.SemanticModel/definition.pbism" -ForegroundColor Gray
 
 # 3. definition.pbir
@@ -401,7 +402,7 @@ $reportJson = [ordered]@{
         }
     }
 } | ConvertTo-Json -Depth 5
-$reportJson | Out-File -FilePath $reportPath -Encoding utf8 -Force
+[IO.File]::WriteAllText($reportPath, $reportJson, $utf8NoBOM)
 Write-Host "  + $projectName.Report/definition.pbir" -ForegroundColor Gray
 
 # ---------------------------------------------------------------------------
@@ -422,7 +423,7 @@ Write-Host "Building enhanced report format..." -ForegroundColor Yellow
         logicalId = [guid]::NewGuid().ToString()
     }
 } | ConvertTo-Json -Depth 5 |
-    Out-File (Join-Path $reportDir ".platform") -Encoding utf8
+    ForEach-Object { [IO.File]::WriteAllText((Join-Path $reportDir ".platform"), $_, $utf8NoBOM) }
 Write-Host "  + .platform" -ForegroundColor Gray
 
 $defDir   = Join-Path $reportDir "definition"
@@ -434,7 +435,7 @@ New-Item -Path $pagesDir -ItemType Directory -Force | Out-Null
     '$schema' = "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/versionMetadata/1.0.0/schema.json"
     version   = "2.0.0"
 } | ConvertTo-Json -Depth 5 |
-    Out-File (Join-Path $defDir "version.json") -Encoding utf8
+    ForEach-Object { [IO.File]::WriteAllText((Join-Path $defDir "version.json"), $_, $utf8NoBOM) }
 Write-Host "  + definition/version.json" -ForegroundColor Gray
 
 # ── StaticResources/SharedResources/BaseThemes/CY26SU02.json ──
@@ -444,7 +445,7 @@ $themeRef = Join-Path $scriptDir "data\references\CY26SU02.json"
 if (Test-Path $themeRef) {
     Copy-Item $themeRef (Join-Path $themeDir "CY26SU02.json") -Force
 } else {
-    '{}' | Out-File (Join-Path $themeDir "CY26SU02.json") -Encoding utf8
+    [IO.File]::WriteAllText((Join-Path $themeDir "CY26SU02.json"), '{}', $utf8NoBOM)
 }
 Write-Host "  + StaticResources base theme" -ForegroundColor Gray
 
@@ -503,7 +504,7 @@ Write-Host "  + StaticResources base theme" -ForegroundColor Gray
         isApplyAllButtonEnabled           = $true
     }
 } | ConvertTo-Json -Depth 10 |
-    Out-File (Join-Path $defDir "report.json") -Encoding utf8
+    ForEach-Object { [IO.File]::WriteAllText((Join-Path $defDir "report.json"), $_, $utf8NoBOM) }
 Write-Host "  + definition/report.json" -ForegroundColor Gray
 
 # ── Pages ──
@@ -515,7 +516,7 @@ $page2Id = "d4e5f6a7b8c9d0e1f200"
     pageOrder      = @($page1Id, $page2Id)
     activePageName = $page1Id
 } | ConvertTo-Json -Depth 5 |
-    Out-File (Join-Path $pagesDir "pages.json") -Encoding utf8
+    ForEach-Object { [IO.File]::WriteAllText((Join-Path $pagesDir "pages.json"), $_, $utf8NoBOM) }
 
 foreach ($pg in @(
     @{ Id = $page1Id; Name = "Executive Summary" },
@@ -537,7 +538,7 @@ foreach ($pg in @(
             referenceScope = "CrossReport"
         }
     } | ConvertTo-Json -Depth 5 |
-        Out-File (Join-Path $pgDir "page.json") -Encoding utf8
+        ForEach-Object { [IO.File]::WriteAllText((Join-Path $pgDir "page.json"), $_, $utf8NoBOM) }
     Write-Host "  + Page: $($pg.Name)" -ForegroundColor Gray
 }
 
@@ -556,7 +557,7 @@ $pbipJson = [ordered]@{
         enableAutoRecovery = $true
     }
 } | ConvertTo-Json -Depth 5
-$pbipJson | Out-File -FilePath $pbipPath -Encoding utf8 -Force
+[IO.File]::WriteAllText($pbipPath, $pbipJson, $utf8NoBOM)
 Write-Host "  + $projectName.pbip" -ForegroundColor Gray
 
 # ---------------------------------------------------------------------------
