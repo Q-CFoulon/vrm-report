@@ -1,8 +1,15 @@
 # VRM Report — Power BI Setup Guide
 
 This guide walks you through setting up the Power BI VRM report that pulls
-data from **Microsoft Defender for Endpoint** — either live via the REST API
-or offline via CSV exports from the Defender portal.
+data from **Microsoft Defender for Endpoint**.
+
+Three data-source modes are available — choose the one that fits your situation:
+
+| Mode | How it works | Granularity | Best for |
+|---|---|---|---|
+| **preloaded** | PowerShell script fetches API data → saved as CSVs → Power BI reads CSVs | Per-device × CVE (full) | Multi-client consulting — recommended |
+| **csv** | Manual portal export → CSVs → Power BI reads CSVs | Per-CVE only | Quick one-off when no tooling access |
+| **api** | Power BI calls Defender API live during refresh | Per-device × CVE (full) | Internal team with stable device access |
 
 ---
 
@@ -11,12 +18,75 @@ or offline via CSV exports from the Defender portal.
 | Requirement | Details |
 |---|---|
 | **Power BI Desktop** | Latest version (free download from Microsoft) |
-| **Data source** | **API mode:** Microsoft 365 account with Security Reader role, **OR** **CSV mode:** exported CSVs from the Defender portal |
-| **Enrichment file** | Copy `data/enrichment/asset-enrichment.example.json` → `asset-enrichment.json` and customise it for your environment |
+| **Enrichment file** | Copy `data/enrichment/asset-enrichment.example.json` → `asset-enrichment.json` and customise it for the environment |
 
 ---
 
-## Quick start — CSV mode (recommended if device compliance blocks API)
+## Quick start — Preloaded mode (recommended for multi-client work)
+
+**Preloaded mode** separates the data-fetch step from Power BI entirely.  A
+PowerShell script authenticates to the Defender API and saves the data as CSV
+files.  Power BI reads those static files with no live API calls, no OAuth
+prompts inside Power BI Desktop, and no Fabric requirement.
+
+This is the recommended approach for consultants working across multiple
+client tenants.
+
+### Step 1: Authenticate and download the data
+
+Run `fetch-defender-data.ps1` from the `powerbi/` folder.
+
+**No app registration needed** — just Azure CLI:
+
+```powershell
+az login --tenant contoso.onmicrosoft.com
+.\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
+```
+
+Or Azure PowerShell if you prefer that:
+
+```powershell
+Connect-AzAccount -TenantId "contoso.onmicrosoft.com"
+.\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com" -AuthMode azure_powershell
+```
+
+The script downloads and saves three CSV files to `powerbi/csv/contoso.onmicrosoft.com/`:
+
+| File | Content |
+|---|---|
+| `machines.csv` | All devices and their properties |
+| `vulnerabilities.csv` | All CVEs with severity, CVSS, exploit status |
+| `machineVulnerabilities.csv` | One row per device × CVE (the join table) |
+
+> **Switching tenants:** Just re-run the script with a different `-TenantId`.
+> Each tenant gets its own subfolder automatically.
+
+### Step 2: Generate and open the Power BI project
+
+```powershell
+.\setup.ps1 -DataSource preloaded -TenantId "contoso" `
+            -CsvFolderPath ".\csv\contoso.onmicrosoft.com" -Open
+```
+
+### Step 3: Refresh in Power BI
+
+1. Click **Refresh** (or **Transform Data** → **Close & Apply**)
+2. If prompted about file privacy, set to **Organizational** → **Connect**
+3. Data loads — full per-device × CVE rows with no sign-in
+
+### Updating the data for a client
+
+Re-run `fetch-defender-data.ps1` with the same `-TenantId`, then click
+**Refresh** in Power BI — no credential management needed inside Power BI.
+
+```powershell
+az login --tenant contoso.onmicrosoft.com   # only needed if session expired
+.\fetch-defender-data.ps1 -TenantId "contoso.onmicrosoft.com"
+```
+
+---
+
+## Quick start — CSV mode (one-off, no tooling required)
 
 If your organization enforces Conditional Access (e.g. registered devices
 only), use CSV mode to bypass the OAuth flow entirely.
@@ -52,10 +122,10 @@ cd powerbi
 .\setup.ps1 -DataSource csv -Open
 ```
 
-Or with a custom CSV folder:
+Or with a custom CSV folder and client label:
 
 ```powershell
-.\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\defender" -Open
+.\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\defender" -TenantId "contoso" -Open
 ```
 
 ### Step 4: Refresh in Power BI
@@ -79,6 +149,12 @@ Open PowerShell in the `powerbi/` folder and run:
 .\setup.ps1 -Open
 ```
 
+With a client label (recommended — names the output file per tenant):
+
+```powershell
+.\setup.ps1 -TenantId "contoso" -Open
+```
+
 This will:
 1. Read all the Power Query (M) scripts from `queries/`
 2. Build a complete `model.bim` with all queries, columns, and DAX measures
@@ -95,7 +171,7 @@ When Power BI opens:
 
 ```powershell
 # Custom enrichment file path
-.\setup.ps1 -EnrichmentPath "C:\data\my-enrichment.json" -Open
+.\setup.ps1 -EnrichmentPath "C:\data\my-enrichment.json" -TenantId "contoso" -Open
 
 # Custom Defender API base URL (e.g. for GCC tenants)
 .\setup.ps1 -DefenderBaseUrl "https://api-gcc.securitycenter.microsoft.us" -Open
@@ -138,6 +214,7 @@ Repeat for each file below (New Source → Blank Query → Advanced Editor → p
 
 In Power Query Editor, go to **Home** → **Manage Parameters** and set:
 
+- `TenantId` → short name or Entra tenant ID of the client (e.g. `contoso`)
 - `DefenderApiBaseUrl` → `https://api.securitycenter.microsoft.com`
 - `EnrichmentFilePath` → absolute path to your `asset-enrichment.json`
 
@@ -213,13 +290,81 @@ daily at 6 AM) using a data gateway so the report stays current.
 
 ---
 
+## Switching between clients
+
+Each client's data lives in a different Microsoft Defender tenant, which means
+both the **OAuth credential** and the **enrichment file** must change when you
+switch clients.  Follow these steps every time.
+
+### Step 1: Generate a client-specific report file
+
+Pass `-TenantId` when running `setup.ps1`.  This names the output `.pbip` after
+the client so each tenant gets its own project — they never share a credential
+cache entry in Power BI Desktop:
+
+```powershell
+# API mode
+.\setup.ps1 -TenantId "contoso" -Open
+
+# CSV mode
+.\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports\contoso" `
+            -TenantId "contoso" -Open
+```
+
+The generated file will be `VRM-Report-contoso.pbip`.  Running it again for
+another client (e.g. `-TenantId "fabrikam"`) produces `VRM-Report-fabrikam.pbip`
+as a completely separate file.
+
+### Step 2: Clear the previous client's API credential (API mode only)
+
+Power BI Desktop stores OAuth tokens globally per URL, not per report file.
+Before opening a different tenant's report you **must** clear the cached
+credential:
+
+1. In Power BI Desktop go to **File → Options & Settings → Data Source Settings**
+2. Select `https://api.securitycenter.microsoft.com`
+3. Click **Clear Permissions** → **Delete**
+4. Click **Close**
+
+### Step 3: Update the enrichment file (if not embedded in setup.ps1)
+
+If the `EnrichmentFilePath` parameter still points to another client's JSON,
+update it:
+
+**Transform Data → Manage Parameters → EnrichmentFilePath**
+
+Set it to the absolute path for this client's `asset-enrichment.json`.
+
+### Step 4: Refresh and re-authenticate
+
+Click **Refresh**.  Power BI will prompt: **Organizational account → Sign in**
+— sign in with the new client's Microsoft 365 account.
+
+> **Tip (CSV mode):** CSV mode has no OAuth prompt.  After updating the
+> `CsvFolderPath` parameter and dropping in the new client's exports, just
+> click **Refresh** — no sign-in required.
+
+### Quick-reference checklist
+
+| # | Action | API mode | CSV mode |
+|---|---|---|---|
+| 1 | Re-run `setup.ps1 -TenantId <client>` to get a named `.pbip` | ✓ | ✓ |
+| 2 | Clear credentials for `api.securitycenter.microsoft.com` | **Required** | Not needed |
+| 3 | Update `EnrichmentFilePath` parameter | ✓ | ✓ |
+| 4 | Update `CsvFolderPath` parameter to new client's export folder | — | **Required** |
+| 5 | Click Refresh and sign in with the new client's account | ✓ | ✓ |
+
+---
+
 ## Troubleshooting
 
 | Issue | Fix |
 |---|---|
-| **Error 50131 / "You can't get there from here"** | Conditional Access blocks unregistered devices. Use CSV mode instead: `.\setup.ps1 -DataSource csv -Open` |
+| **`az login` says no subscription found** | Ignore — only a tenant login is needed. Re-run `fetch-defender-data.ps1`; the token is valid even without a subscription |
+| **Error 50131 / "You can't get there from here"** | Conditional Access blocks unregistered devices. Use preloaded or CSV mode instead |
+| **`fetch-defender-data.ps1` fails mid-download** | Re-run the script — it overwrites each file on completion. Partial CSV files are replaced on the next run |
 | **"Access to the resource is forbidden"** | Your account needs the Security Reader or Security Admin role in Defender for Endpoint |
-| **Timeout on large tenants** | In Power Query, edit `fn_PaginatedGet` and add `?$top=10000` to the initial URL to set explicit page size |
+| **Timeout on large tenants (API mode)** | In Power Query, edit `fn_PaginatedGet` and add `?$top=10000` to the initial URL to set explicit page size |
 | **Enrichment file not found** | Check the `FilePath` variable in `Enrichment` and `EnrichmentDefaults` queries — use an absolute path |
 | **Column "X" not found** | Ensure query names match exactly (case-sensitive): `fn_PaginatedGet`, `Vulnerabilities`, `MachineVulnerabilities`, `Machines`, `Enrichment`, `EnrichmentDefaults`, `VRM_Report` |
 
@@ -229,11 +374,17 @@ daily at 6 AM) using a data gateway so the report stays current.
 
 ```
 powerbi/
+  fetch-defender-data.ps1        ← downloads API data as CSVs (preloaded mode)
   setup.ps1                      ← run this to generate the PBIP project
   VRM-Report.pbip                ← (generated) open in Power BI Desktop
+  VRM-Report-<tenant>.pbip       ← (generated) per-client file when -TenantId is used
   VRM-Report.SemanticModel/      ← (generated) semantic model definition
   VRM-Report.Report/             ← (generated) report definition
-  csv/                           ← drop exported CSVs here (csv mode)
+  csv/
+    <tenantId>/                  ← per-client CSVs from fetch-defender-data.ps1
+      machines.csv
+      vulnerabilities.csv
+      machineVulnerabilities.csv
   queries/
     fn_PaginatedGet.pq           ← reusable paginated API call function (API mode)
     Vulnerabilities.pq           ← GET /api/vulnerabilities (API mode)
@@ -241,11 +392,15 @@ powerbi/
     Machines.pq                  ← GET /api/machines (API mode)
     Enrichment.pq                ← business-context JSON loader
     EnrichmentDefaults.pq        ← default values from enrichment JSON
-    VRM_Report.pq                ← main report: joins + columns A–O (API mode)
+    VRM_Report.pq                ← main report: joins + columns A–O (API and preloaded modes)
     csv/
-      Vulnerabilities_CSV.pq     ← load export-tvm-vulnerabilities.csv
-      Machines_CSV.pq            ← load devices.csv
-      VRM_Report_CSV.pq          ← CVE-level report from CSV data
+      Vulnerabilities_CSV.pq     ← load export-tvm-vulnerabilities.csv (csv mode)
+      Machines_CSV.pq            ← load devices.csv (csv mode)
+      VRM_Report_CSV.pq          ← CVE-level report from portal CSV data
+    preloaded/
+      Vulnerabilities_preloaded.pq          ← load vulnerabilities.csv (preloaded mode)
+      MachineVulnerabilities_preloaded.pq   ← load machineVulnerabilities.csv
+      Machines_preloaded.pq                 ← load machines.csv
   measures/
     dax-measures.dax             ← DAX measures reference (embedded by setup.ps1)
   SETUP.md                       ← this file

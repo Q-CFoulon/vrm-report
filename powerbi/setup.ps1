@@ -36,23 +36,28 @@
 
 .EXAMPLE
     .\setup.ps1 -Open
-    .\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports" -Open
-    .\setup.ps1 -EnrichmentPath "C:\data\enrichment.json" -Open
+    .\setup.ps1 -TenantId "contoso" -Open
+    .\setup.ps1 -DataSource csv -CsvFolderPath "C:\exports" -TenantId "fabrikam" -Open
+    .\setup.ps1 -EnrichmentPath "C:\data\enrichment.json" -TenantId "contoso" -Open
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet('api','csv')]
+    [ValidateSet('api','csv','preloaded')]
     [string]$DataSource = 'api',
     [string]$CsvFolderPath,
     [string]$EnrichmentPath,
     [string]$DefenderBaseUrl = "https://api.securitycenter.microsoft.com",
+    # Client/tenant identifier — used to name the output .pbip and as a visible
+    # Power BI parameter so you always know which client you are working on.
+    # Use the tenant's short name or Entra tenant ID GUID.
+    [string]$TenantId,
     [switch]$Open
 )
 
 $ErrorActionPreference = "Stop"
 $scriptDir   = $PSScriptRoot
 $queriesDir  = Join-Path $scriptDir "queries"
-$projectName = "VRM-Report"
+$projectName = if ($TenantId) { "VRM-Report-$TenantId" } else { "VRM-Report" }
 
 # ---------------------------------------------------------------------------
 # Resolve the enrichment file path
@@ -68,15 +73,18 @@ if (-not $EnrichmentPath) {
 }
 
 # ---------------------------------------------------------------------------
-# Resolve CSV folder path (csv mode)
+# Resolve CSV folder path (csv and preloaded modes)
 # ---------------------------------------------------------------------------
-if ($DataSource -eq 'csv') {
+if ($DataSource -eq 'csv' -or $DataSource -eq 'preloaded') {
     if (-not $CsvFolderPath) {
         $CsvFolderPath = Join-Path $scriptDir "csv"
     }
-    if (-not (Test-Path $CsvFolderPath)) {
+    if ($DataSource -eq 'csv' -and -not (Test-Path $CsvFolderPath)) {
         New-Item -Path $CsvFolderPath -ItemType Directory -Force | Out-Null
         Write-Warning "CSV folder created at: $CsvFolderPath`nPlace your exported CSVs there:`n  export-tvm-vulnerabilities.csv  (Weaknesses export)`n  devices.csv                     (Devices export)"
+    }
+    if ($DataSource -eq 'preloaded' -and -not (Test-Path $CsvFolderPath)) {
+        throw "CSV folder not found: $CsvFolderPath`nRun fetch-defender-data.ps1 first to download the data from the tenant."
     }
 }
 
@@ -90,6 +98,11 @@ if ($DataSource -eq 'api') {
     Write-Host "CSV folder   : $CsvFolderPath"
 }
 Write-Host "Enrichment   : $EnrichmentPath"
+if ($TenantId) {
+    Write-Host "Tenant ID    : $TenantId" -ForegroundColor Cyan
+} else {
+    Write-Warning "No -TenantId specified. Consider passing -TenantId <name-or-guid> so each client gets its own .pbip file and you always know which tenant you are working on."
+}
 Write-Host ""
 
 # ---------------------------------------------------------------------------
@@ -115,9 +128,25 @@ if ($DataSource -eq 'csv') {
     }
 }
 
+# In preloaded mode, override the three API data queries with CSV-backed
+# equivalents that read files produced by fetch-defender-data.ps1.
+# VRM_Report.pq is NOT overridden — it runs unchanged for full per-device rows.
+if ($DataSource -eq 'preloaded') {
+    $preloadedDir = Join-Path $queriesDir "preloaded"
+    foreach ($preFile in (Get-ChildItem "$preloadedDir\*.pq")) {
+        $baseName = $preFile.BaseName -replace '_preloaded$', ''
+        $mQueries[$baseName] = (Get-Content $preFile.FullName -Raw).TrimEnd()
+        Write-Host "  ~ $baseName (preloaded: $($preFile.Name))" -ForegroundColor DarkCyan
+    }
+}
+
 $requiredQueries = if ($DataSource -eq 'csv') {
     @("Vulnerabilities", "Machines",
       "Enrichment", "EnrichmentDefaults", "VRM_Report")
+} elseif ($DataSource -eq 'preloaded') {
+    # Same as API mode but no fn_PaginatedGet — data comes from static CSVs
+    @("Vulnerabilities", "MachineVulnerabilities",
+      "Machines", "Enrichment", "EnrichmentDefaults", "VRM_Report")
 } else {
     @("fn_PaginatedGet", "Vulnerabilities", "MachineVulnerabilities",
       "Machines", "Enrichment", "EnrichmentDefaults", "VRM_Report")
@@ -237,8 +266,22 @@ $model = [ordered]@{
         expressions = $(
             $exprs = [System.Collections.ArrayList]::new()
 
-            if ($DataSource -eq 'csv') {
-                # CSV mode: CsvFolderPath parameter instead of API URL
+            # TenantId parameter — always emitted first so it is the most
+            # prominent entry in Transform Data > Manage Parameters.
+            # Changing this value is the signal that you are switching clients;
+            # you must also clear credentials (see SETUP.md).
+            [void]$exprs.Add([ordered]@{
+                name = "TenantId"
+                kind = "m"
+                expression = Split-Expression(
+                    "`"$TenantId`" meta [IsParameterQuery=true, Type=`"Text`", IsParameterQueryRequired=true]"
+                )
+            })
+
+            if ($DataSource -eq 'csv' -or $DataSource -eq 'preloaded') {
+                # CSV / preloaded mode: CsvFolderPath parameter instead of API URL.
+                # In preloaded mode the folder holds API-format CSVs from
+                # fetch-defender-data.ps1; in csv mode it holds portal exports.
                 [void]$exprs.Add([ordered]@{
                     name = "CsvFolderPath"
                     kind = "m"
@@ -523,6 +566,18 @@ Write-Host ""
 Write-Host "Done! Project generated at:" -ForegroundColor Green
 Write-Host "  $pbipPath" -ForegroundColor White
 Write-Host ""
+if ($TenantId) {
+    Write-Host "Tenant       : $TenantId" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Switching clients later?" -ForegroundColor Cyan
+    Write-Host "  Re-run:  .\fetch-defender-data.ps1 -TenantId <new-tenant>" -ForegroundColor White
+    Write-Host "  Then:    .\setup.ps1 -DataSource preloaded -TenantId <new-tenant> -CsvFolderPath <folder> -Open" -ForegroundColor White
+    if ($DataSource -eq 'api') {
+        Write-Host "  Or for API mode: clear credentials in Power BI first" -ForegroundColor Gray
+        Write-Host "    File > Options > Data Source Settings > Clear Permissions" -ForegroundColor Gray
+    }
+    Write-Host ""
+}
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Open $projectName.pbip in Power BI Desktop"
 if ($DataSource -eq 'csv') {
@@ -533,6 +588,16 @@ if ($DataSource -eq 'csv') {
     Write-Host ""
     Write-Host "  Note: CSV mode produces one row per CVE (not per device)." -ForegroundColor DarkYellow
     Write-Host "  The Devices table is loaded as a supplementary reference." -ForegroundColor DarkYellow
+} elseif ($DataSource -eq 'preloaded') {
+    Write-Host "  2. Click Refresh — data loads instantly from the pre-downloaded CSVs"
+    Write-Host "     No API credentials or sign-in needed in Power BI." -ForegroundColor DarkCyan
+    Write-Host ""
+    Write-Host "  Note: Preloaded mode gives full per-device×CVE rows (same as API mode)." -ForegroundColor DarkCyan
+    Write-Host "  CSV folder: $CsvFolderPath" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  To update data for this client:" -ForegroundColor Cyan
+    Write-Host "    .\fetch-defender-data.ps1 -TenantId `"$TenantId`"" -ForegroundColor White
+    Write-Host "    Then click Refresh in Power BI." -ForegroundColor White
 } else {
     Write-Host "  2. When prompted, sign in with your Organizational Account"
     Write-Host "  3. Set privacy level to Organizational"
