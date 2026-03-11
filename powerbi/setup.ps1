@@ -590,10 +590,10 @@ if ($DataSource -eq 'csv') {
     Write-Host "  Note: CSV mode produces one row per CVE (not per device)." -ForegroundColor DarkYellow
     Write-Host "  The Devices table is loaded as a supplementary reference." -ForegroundColor DarkYellow
 } elseif ($DataSource -eq 'preloaded') {
-    Write-Host "  2. Click Refresh — data loads instantly from the pre-downloaded CSVs"
+    Write-Host "  2. Click Refresh - data loads instantly from the pre-downloaded CSVs"
     Write-Host "     No API credentials or sign-in needed in Power BI." -ForegroundColor DarkCyan
     Write-Host ""
-    Write-Host "  Note: Preloaded mode gives full per-device×CVE rows (same as API mode)." -ForegroundColor DarkCyan
+    Write-Host "  Note: Preloaded mode gives full per-device x CVE rows (same as API mode)." -ForegroundColor DarkCyan
     Write-Host "  CSV folder: $CsvFolderPath" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  To update data for this client:" -ForegroundColor Cyan
